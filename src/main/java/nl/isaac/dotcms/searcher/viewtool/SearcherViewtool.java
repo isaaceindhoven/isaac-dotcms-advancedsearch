@@ -13,7 +13,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -236,29 +235,30 @@ public class SearcherViewtool implements ViewTool {
 			Logger.info(this.getClass(), "Searching " + contentlets.size() + " contentlets for '" + text + "'");
 			for(Contentlet contentlet: contentlets) {
 				if(structureType == contentlet.getStructure().getStructureType()) {
-					
+
 					Status status = statusFactory.getStatusForObject(Type.CONTENT, contentlet, expectingStatus);
 					if(status != null) {
 						if(status.getStatus().equals(StatusEnum.SAVED) && version.equals(Version.LIVE)) {
 							if(status.getObject() instanceof Contentlet) {
-								contentlet = (Contentlet) status.getObject();							
+								contentlet = (Contentlet) status.getObject();
 							}
 						}
 
 						Map<String, Object> row = contentlet.getMap();
 						row.put("structureName", contentlet.getStructure().getName());
-						Iterator<Entry<String, Object>> entryIterator = row.entrySet().iterator();
-					
-						while(entryIterator.hasNext()) {
-							Entry<String, Object> entry = entryIterator.next();
-					
+
+						// Extract the title in case it hasn't been loaded yet, if it isn't, it will cause a ConcurrentModificationException in the loop below
+						final String title = contentlet.getTitle();
+
+						for(Entry<String, Object> entry : row.entrySet()) {
+
 							if(entry.getValue() instanceof String) {
-								List<String> snippets = getSnippetFromText(entry.getValue().toString(), text);
-						
+								List<String> snippets = getSnippetFromText((String) entry.getValue(), text);
+
 								if(snippets != null) {
-									searchResults.add(new SearchResult(row, contentlet.getTitle(), entry.getKey(), entry.getValue().toString(), snippets, host.getHostname(), status.getStatus()));
+									searchResults.add(new SearchResult(row, title, entry.getKey(), (String) entry.getValue(), snippets, host.getHostname(), status.getStatus()));
 								}
-							}	
+							}
 						}
 					}
 				}
