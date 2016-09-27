@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>nl.isaac.dotcms.plugin.advancedsearch</groupId>
 	<artifactId>isaac-dotcms-advancedsearch</artifactId>
-	<version>2.5.1</version>
+	<version>3.0.0</version>
 	<packaging>bundle</packaging>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -55,7 +55,7 @@
 						<Bundle-Name>${project.artifactId}</Bundle-Name>
 						<Bundle-Version>${project.version}</Bundle-Version>
 						<Bundle-Activator>nl.isaac.dotcms.searcher.osgi.AdvancedSearchActivator</Bundle-Activator>
-						<Import-Package>org.osgi.framework,
+						<Import-Package>com.dotcms.repackage.org.osgi.framework,
 							com.dotmarketing.osgi,
 							com.dotmarketing.beans,
 							com.dotmarketing.portlets.containers.business,
@@ -94,7 +94,7 @@
 		<dependency>
 			<groupId>com.dotcms</groupId>
 			<artifactId>dotcms</artifactId>
-			<version>2.5.1</version>
+			<version>3.0.1</version>
 			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
@@ -116,21 +116,9 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.felix</groupId>
-			<artifactId>org.apache.felix.main</artifactId>
-			<version>4.2.1</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.felix</groupId>
-			<artifactId>org.apache.felix.http.api</artifactId>
-			<version>2.2.0</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.felix</groupId>
-			<artifactId>org.osgi.compendium</artifactId>
-			<version>1.4.0</version>
+			<groupId>com.dotcms.lib</groupId>
+			<artifactId>dot.felix</artifactId>
+			<version>4.2.1_1</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>

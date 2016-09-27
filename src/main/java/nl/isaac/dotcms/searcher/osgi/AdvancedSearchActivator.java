@@ -10,12 +10,11 @@ import nl.isaac.dotcms.searcher.viewtool.SearcherViewtool;
 import nl.isaac.dotcms.util.osgi.ExtendedGenericBundleActivator;
 import nl.isaac.dotcms.util.osgi.ViewToolScope;
 
-import org.apache.felix.http.api.ExtHttpService;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
-import org.osgi.service.http.NamespaceException;
-import org.osgi.util.tracker.ServiceTracker;
-
+import com.dotcms.repackage.org.apache.felix.http.api.ExtHttpService;
+import com.dotcms.repackage.org.osgi.framework.BundleContext;
+import com.dotcms.repackage.org.osgi.framework.ServiceReference;
+import com.dotcms.repackage.org.osgi.service.http.NamespaceException;
+import com.dotcms.repackage.org.osgi.util.tracker.ServiceTracker;
 import com.dotmarketing.filters.CMSFilter;
 import com.dotmarketing.util.Logger;
 

@@ -10,8 +10,8 @@ import java.util.PropertyResourceBundle;
 import java.util.Set;
 
 import org.apache.velocity.tools.view.context.ViewContext;
-import org.osgi.framework.BundleContext;
 
+import com.dotcms.repackage.org.osgi.framework.BundleContext;
 import com.dotmarketing.business.APILocator;
 import com.dotmarketing.exception.DotDataException;
 import com.dotmarketing.osgi.GenericBundleActivator;
