@@ -25,11 +25,7 @@ public class FileTools {
 				}
 			}
 			return workingFiles;
-		} catch (DotDataException e) {
-			throw new RuntimeException(e);
-		} catch (DotStateException e) {
-			throw new RuntimeException(e);
-		} catch (DotSecurityException e) {
+		} catch (DotDataException | DotStateException | DotSecurityException e) {
 			throw new RuntimeException(e);
 		}
 	}

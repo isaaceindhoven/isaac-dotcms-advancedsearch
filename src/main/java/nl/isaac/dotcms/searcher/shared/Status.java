@@ -1,10 +1,18 @@
 package nl.isaac.dotcms.searcher.shared;
 
+/**
+ * @author yasin.dilekci
+ *
+ */
 public class Status {
 	
 	private Object object;
 	public StatusEnum status; 
 
+	public Status() {
+		
+	}
+	
 	public enum StatusEnum {
 		ALL {
 			public boolean getLive() { return false; }

@@ -3,6 +3,7 @@ package nl.isaac.dotcms.searcher;
 import java.util.List;
 
 import nl.isaac.dotcms.searcher.shared.Status.StatusEnum;
+import nl.isaac.dotcms.searcher.shared.Type;
 
 /**
 * dotCMS Searcher plugin by ISAAC - The Full Service Internet Agency is licensed 
@@ -14,6 +15,8 @@ import nl.isaac.dotcms.searcher.shared.Status.StatusEnum;
 */
 
 public class SearchResult {
+	
+	private final Type type;
 	private final Object item;
 	private final String fieldName;
 	private final String fieldValue;
@@ -22,8 +25,9 @@ public class SearchResult {
 	private final String title;
 	private final StatusEnum status;
 	
-	public SearchResult(Object item, String title, String fieldName, String fieldValue, List<String> snippets, String hostName, StatusEnum status) {
+	public SearchResult(Type type, Object item, String title, String fieldName, String fieldValue, List<String> snippets, String hostName, StatusEnum status) {
 		super();
+		this.type = type;
 		this.item = item;
 		this.fieldName = fieldName;
 		this.fieldValue = fieldValue;
@@ -31,6 +35,10 @@ public class SearchResult {
 		this.hostName = hostName;
 		this.title = title;
 		this.status = status;
+	}
+	
+	public Type getType() {
+		return type;
 	}
 
 	public Object getItem() {

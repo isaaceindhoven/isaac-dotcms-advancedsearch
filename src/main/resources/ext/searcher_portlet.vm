@@ -66,31 +66,47 @@
 </script>
 
 #set($textParam = $request.getSession().getAttribute('searcher_text'))
+
 #if($UtilMethods.isSet($textParam))
-	#set($contentlets = $request.getSession().getAttribute('searcher_contentlets'))
-	#set($containers = $request.getSession().getAttribute('searcher_containers'))
-	#set($foundStructures = $request.getSession().getAttribute('searcher_structures'))
-	#set($templates = $request.getSession().getAttribute('searcher_templates'))
-	#set($foundFiles = $request.getSession().getAttribute('searcher_files'))
-	#set($foundHtmlPages = $request.getSession().getAttribute('searcher_htmlpages'))
-	#set($foundWidgets = $request.getSession().getAttribute('searcher_widgets'))
+	#set($page = 1)
+	#set($searchFilteredResults = $request.getSession().getAttribute('searcher_filteredResults'))
+	#set($pagination = $request.getAttribute('pagination'))
 	#set($hostParam = $request.getSession().getAttribute('searcher_host'))
-	#set($currentURL =  $request.getSession().getAttribute('searcher_referer'))
+	#set($currentURL = "/c/portal/layout?$request.getQueryString()")
+	#set($searchMode = $request.getSession().getAttribute('searcher_mode'))
 	#set($status = $request.getSession().getAttribute('searcher_status'))
 	#set($version = $request.getSession().getAttribute('searcher_version'))
 	#set($language_id = $request.getSession().getAttribute('searcher_languageId'))
 	#set($type_id = $request.getSession().getAttribute('searcher_typeId'))
-	#set($resultSize = $contentlets.size() + $foundWidgets.size() + $containers.size() + $foundStructures.size() + $templates.size() + $foundFiles.size() + $foundHtmlPages.size())
+	#set($snippetSizeBefore = $request.getSession().getAttribute('searcher_snippetSizeBefore'))
+	#set($snippetSizeAfter = $request.getSession().getAttribute('searcher_snippetSizeAfter'))
+	#set($excludeText = $request.getSession().getAttribute('searcher_excludeText'))
+	#set($resultSize = $searchFilteredResults.size())
+	#set($maxResults = $request.getSession().getAttribute('searcher_maxResults'))
+	#set($resultsPerPage = $request.getSession().getAttribute('searcher_resultsPerPage'))
 #else
 	#set($status = "all")
 	#set($language_id = 1)
 	#set($type_id = "all")
+	#set($searchMode = "TEXT")
 	#set($version = "WORKING")
+	#set($snippetSizeBefore = 200)
+	#set($snippetSizeAfter = 200)
+	#set($maxResults = 50)
+	#set($resultsPerPage = 50)
 #end
 
-#set($allHosts = $searcher.getAllHosts())
+#set($allHosts = $!portletviewtool.getAllHosts())
 #if(!$UtilMethods.isSet($hostParam))
 	#set($hostParam = $host.hostname)
+#end
+
+#if($UtilMethods.isSet($resultSize) && $!resultSize > 0)
+	#if ($UtilMethods.isSet($request.getParameter('page')))
+		#set($page = $webapi.parseInt($request.getParameter('page')))
+	#end
+	
+	#set($paginatedResults = $!portletviewtool.paginateResultsAndGetSnippets($page, $request))
 #end
 
 <div class="portlet-wrapper" >
@@ -117,6 +133,7 @@
 						</dd>
 					</dl>
 					<div class="clear"></div>
+					
 					<!-- Hosts dropdown -->
 					<dl>
 						<dt>
@@ -132,6 +149,7 @@
 						</dd>
 					</dl>
 					<div class="clear"></div>
+					
 					<!--Keyword textfield-->
 					<dl>
 						<dt>
@@ -144,6 +162,27 @@
 						</dd>
 					</dl>
 					<div class="clear"></div>
+					
+					<!--Search Mode radio-->
+					<dl>
+						<dt>
+							<a href="#" id="tip-search-mode"><span class="hintIcon"></span></a>
+							<span dojoType="dijit.Tooltip" connectId="tip-search-mode" position="above" style="width:100px;"> <span class="contentHint">Please select the search mode of the items: <ul><li>Text: This is the standard and will search items by text.</li><li>Regex: This will search items by regular expression.</li></ul></span> </span>
+							Search Mode:
+						</dt>
+						<dd class="radioList">
+							<div>
+								<input type="radio" #if($searchMode == "TEXT") checked="checked" #end dojoType="dijit.form.RadioButton" name="searchMode" id="search-mode-text" value="TEXT">
+								&nbsp;<label for="search-mode-text">Text</label>
+							</div>
+							<div>
+								<input type="radio" #if($searchMode == "REGEX") checked="checked" #end dojoType="dijit.form.RadioButton" name="searchMode" id="search-mode-regex" value="REGEX">
+								&nbsp;<label for="search-mode-regex">Regex</label>
+							</div>
+						</dd>
+					</dl>
+					<div class="clear"></div>
+					
 					<!-- Type dropdown-->
 					<dl>
 						<dt>
@@ -159,6 +198,7 @@
 						</dd>
 					</dl>
 					<div class="clear"></div>
+					
 					<!--Status radio-->
 					<dl>
 						<dt>
@@ -186,6 +226,7 @@
 						</dd>
 					</dl>
 					<div class="clear"></div>
+					
 					<!--Version radio-->
 					<dl>
 						<dt>
@@ -204,44 +245,103 @@
 							</div>
 						</dd>
 					</dl>
-					<div class="clear"></div>
-					<!--Buttons-->
-					<div class="buttonRow">
-						<button dojoType="dijit.form.Button" id="searchButton" type="submit" iconClass="searchIcon">
-							Search
-						</button>
-						<button dojoType="dijit.form.Button" id="clearButton" onclick="clearSearch();" iconClass="resetIcon">
-							Clear Search
-						</button>
+					<div id="advancedSearchOptions" style="height:0px;overflow: hidden">
+						<div class="clear"></div>
+
+						<!-- Snippet size -->
+						<dl>
+							<dt>
+								<a href="#" id="tip-snippetSizeBefore"><span class="hintIcon"></span></a>
+								<span dojoType="dijit.Tooltip" connectId="tip-snippetSizeBefore" position="above" style="width:100px;"> <span class="contentHint">Amount of characters shown in the snippet before the keyword</span> </span>
+								Snippet size before keyword:
+							</dt>
+							<dd>
+								<input type="number" dojoType="dijit.form.NumberTextBox" required="true" name="snippetSizeBefore" value="$!{snippetSizeBefore}"/>
+							</dd>
+						</dl>
+						<div class="clear"></div>
+						<dl>
+							<dt>
+								<a href="#" id="tip-snippetSizeAfter"><span class="hintIcon"></span></a>
+								<span dojoType="dijit.Tooltip" connectId="tip-snippetSizeAfter" position="above" style="width:100px;"> <span class="contentHint">Amount of characters shown in the snippet after the keyword</span> </span>
+								Snippet size after keyword:
+							</dt>
+							<dd>
+								<input type="number" dojoType="dijit.form.NumberTextBox" required="true" name="snippetSizeAfter" value="$!{snippetSizeAfter}"/>
+							</dd>
+						</dl>
+						
+						<!-- Exclude -->
+						<dl>
+							<dt>
+								<a href="#" id="tip-exclude"><span class="hintIcon"></span></a>
+								<span dojoType="dijit.Tooltip" connectId="tip-exclude" position="above" style="width:100px;"> <span class="contentHint">This text is excluded from the search</span> </span>
+								Exclude:
+							</dt>
+							<dd>
+								<input type="text" dojoType="dijit.form.TextBox" name="excludeText" value="$!excludeText"/>
+							</dd>
+						</dl>
+						<div class="clear"></div>
+						
+						<!-- Max results -->
+						<dl>
+							<dt>
+								<a href="#" id="tip-maxResults"><span class="hintIcon"></span></a>
+								<span dojoType="dijit.Tooltip" connectId="tip-maxResults" position="above" style="width:100px;"> <span class="contentHint">Max amount of results to search for. <ul><li>0: search everything</li></ul></span> </span>
+								Max results size:
+							</dt>
+							<dd>
+								<input type="number" dojoType="dijit.form.NumberTextBox" required="true" name="maxResults" value="$!maxResults"/>
+							</dd>
+						</dl>
+						<div class="clear"></div>
+						
+						<!-- Results per page -->
+						<dl>
+							<dt>
+								<a href="#" id="tip-resultsPerPage"><span class="hintIcon"></span></a>
+								<span dojoType="dijit.Tooltip" connectId="tip-resultsPerPage" position="above" style="width:100px;"> <span class="contentHint">Max amount of results per page.</span> </span>
+								Results size per page:
+							</dt>
+							<dd>
+								<input type="number" dojoType="dijit.form.NumberTextBox" required="true" name="resultsPerPage" value="$!resultsPerPage"/>
+							</dd>
+						</dl>
+						<div class="clear"></div>
 					</div>
-					<div class="clear"></div>
 				</div>
+
+				<!--Buttons-->
+				<div class="buttonRow">
+					<button dojoType="dijit.form.Button" id="searchButton" type="submit" iconClass="searchIcon">
+						Search
+					</button>
+					<button dojoType="dijit.form.Button" id="clearButton" onclick="clearSearch();" iconClass="resetIcon">
+						Clear Search
+					</button>
+				</div>
+				<a href="javascript:toggleAdvancedSearchDiv()" style="display:block;background:#f1f1f1;border-top:1px solid #ddd;padding:8px 10px;text-align:center;text-decoration:none;">
+					<div id="toggleDivText">
+						Advanced
+					</div>
+				</a>
+
+				<div id="measureTheHeightOfSearchTools" class="clear"></div>
 			</div>
+			
 			<!-- START Right Column -->
 			<div dojoType="dijit.layout.ContentPane" splitter="true" region="center" id="contentWrapper" style="overflow-y:auto; overflow-x:auto;margin:35px 0 0 0;">
-				<!-- START Listing Results -->
-				
-				<div id="matchingResultsDiv">
-					<div class="yui-gb portlet-toolbar">
-						<div class="yui-u first">
-							#if($UtilMethods.isSet($resultSize))
-								$!resultSize result(s) found for "<strong>$!textParam</strong>"
-							#end
-						</div>
-						<div id="tablemessage" class="yui-u" style="text-align:center;"></div>
-						<div class="yui-u" style="text-align:right;"></div>
-					</div>
-				</div>
-				
-				<table id="results_table" class="listingTable">
-					#if($!resultSize == 0 || !$UtilMethods.isSet($resultSize))
-					<tr>
-						<td>
-							<div class="noResultsMessage">No results found</div>
-						</td>
-					</tr>
+
+				#if(!$UtilMethods.isSet($resultSize) || $!resultSize == 0 || !$UtilMethods.isSet($paginatedResults))
+					<div class="noResultsMessage">No results found</div>
+				#else
+				<div id="metaMatchingResultsDiv" style="display:none;padding-top:7px;">
+					<!-- START Listing Results -->
+					<div id="matchingResultsDiv" style="display: none"></div>
 					
-					#else
+					<table id="results_table" class="listingTable">
+
 						<tr>
 							<th width="5"></th>
 							<th width="5"></th>
@@ -251,150 +351,149 @@
 							<th>Host</th>
 							<th>Snippet</th>
 						</tr>
-						#foreach($searchResult in $containers)
-	
-							#set($containerInode = ${searchResult.item.inode})
-		
-							<tr>
-								<td class="nowrap">#if($searchResult.status == "PUBLISHED")<!--published icons--><span class="greyDotIcon" style="opacity:.4"></span><span class="liveIcon"></span>#elseif($searchResult.status == "UNPUBLISHED")<!--unpublished icons --><span class="workingIcon"></span><span class="greyDotIcon" style="opacity:.4"></span>#elseif($searchResult.status == "ARCHIVED")<!--archived icons--><span class="greyDotIcon" style="opacity:.4"></span><span class="archivedIcon"></span>#elseif($searchResult.status == "SAVED")<!--unpublished changes icons--><span class="workingIcon"></span><span class="liveIcon"></span>#end</td>
-								<td align="center"><img width="16px" height="11px" src="/html/images/languages/all.gif" class="country-flag"></td>
-								<td class="nowrap"><a href="javascript: editContainer('${containerInode}','$!{currentURL}')"><span class="container" title="container"></span> $!{searchResult.title}</a></td>
-								<td>Container</td>
-								<td>$!{searchResult.fieldName}</td>
-								<td class="nowrap"><span class="hostIcon"></span> ${searchResult.hostName}</td>
-								<td> #foreach($snippet in $searchResult.snippets)
-								#set( $htmlEncodedString = $webapi.htmlEncode($!snippet.toLowerCase()) )
-								#set( $htmlEncodedTextParam = $webapi.htmlEncode($!textParam.toLowerCase()) )
-								<div class="snippet">
-									$!portletviewtool.replaceHTMLEncodedTextWithMatchHighlight($htmlEncodedString, $htmlEncodedTextParam)
-								</div> #end </td>
-							</tr>
-						#end
 						
-						#foreach($searchResult in $contentlets)
-							#set($languageObject = $languagewebapi.getLanguage("${searchResult.item.languageId}"))
-							#set($contentletInode = ${searchResult.item.inode})
-							#set($imageFlagURL = "/html/images/languages/"+ $languageObject.getLanguageCode() +"_"+ $languageObject.getCountryCode()+".gif")
-		
+						#foreach ($searchResult in $paginatedResults)
+							
+							#if($searchResult.type == "CONTENT" || $searchResult.type == "WIDGET" || $searchResult.type == "FILE")
+								#set($languageObject = $languagewebapi.getLanguage("${searchResult.item.languageId}"))
+								#set($imageFlagURL = "/html/images/languages/"+ $languageObject.getLanguageCode() +"_"+ $languageObject.getCountryCode()+".gif")
+								#set($imageFlagTitle = $!languageObject.getLanguage() + ", " + $!languageObject.getCountry())
+							#else
+								#set($imageFlagURL = "/html/images/languages/all.gif")
+								#set($imageFlagTitle = "")
+							#end
+							
+							#if($searchResult.type == "CONTAINER")
+								#set($type = "Container")
+								#set($inode = "javascript: editContainer('$!{searchResult.item.inode}','$!{currentURL}')")
+								#set($inodeTitle = '<span class="container" title="container"></span> ' + $!{searchResult.title})
+							#elseif($searchResult.type == "CONTENT")
+								#set($type = $!{searchResult.item.structureName})
+								#set($inode = "javascript: editContentlet('$!{searchResult.item.inode}','$!{currentURL}')")
+								#set($inodeTitle = '<span class="contentIcon" title="content"></span> ' + $!{searchResult.title})
+							#elseif($searchResult.type == "WIDGET")
+								#set($type = $!{searchResult.item.structureName})
+								#set($inode = "javascript: editContentlet('$!{searchResult.item.inode}','$!{currentURL}')")
+								
+								#if($UtilMethods.isSet($searchResult.item.widgetTitle))
+									#set($title = $!{searchResult.item.widgetTitle})
+								#else
+									#set($title = $!{searchResult.title})
+								#end
+								
+								#set($inodeTitle = '<span class="gearIcon" title="widget"></span> ' + $!{title})
+							#elseif($searchResult.type == "FILE")
+								#set($type = "File")
+								#set($inode = "javascript: editContentlet('$!{searchResult.item.inode}','$!{currentURL}')")
+								#set($inodeTitle = '<span class="fileIcon" title="file"></span> ' + $!{searchResult.item.path} + $!{searchResult.item.fileName})
+							#elseif($searchResult.type == "TEMPLATE")
+								#set($type = "Template")
+								#set($inode = "javascript: editTemplate('$!{searchResult.item.inode}','$!{currentURL}')")
+								#set($inodeTitle = '<span class="templateIcon" title="template"></span> ' + $!{searchResult.title})
+							#elseif($searchResult.type == "STRUCTURE")
+								#set($type = $!{searchResult.item.name} + ' (Structure)')
+								#set($inode = "javascript: editStructure('$!{searchResult.item.inode}');")
+								#set($inodeTitle = '<span class="structureIcon" title="structure"></span> ' + $!{searchResult.title})
+							#elseif($searchResult.type == "HTMLPAGE")
+								#set($type = "HTML Page")
+								#set($inode = "$!{searchResult.item.URI}")
+								#set($inodeTitle = '<span class="pageIcon" title="HTML page"></span> ' + $!{searchResult.title})
+							#elseif($searchResult.type == "FOLDER")
+								#set($type = "Folder")
+								#set($inode = "javascript: editFolder('$!{searchResult.item.inode}','$!{currentURL}')")
+								#set($inodeTitle = '<span class="folderIcon" title="folder"></span> ' + $!{searchResult.title})
+							#end
+
 							<tr>
-								<td class="nowrap"> #if($searchResult.status == "PUBLISHED") <!--published icons--><span class="greyDotIcon" style="opacity:.4"></span><span class="liveIcon"></span> #elseif($searchResult.status == "UNPUBLISHED") <!--unpublished icons --><span class="workingIcon"></span><span class="greyDotIcon" style="opacity:.4"></span> #elseif($searchResult.status == "ARCHIVED") <!--archived icons--><span class="greyDotIcon" style="opacity:.4"></span><span class="archivedIcon"></span> #elseif($searchResult.status == "SAVED") <!--unpublished changes icons--><span class="workingIcon"></span><span class="liveIcon"></span> #end </td>
-								<td align="center"><img width="16px" height="11px" src="$!{imageFlagURL}" class="country-flag" title="$!languageObject.getLanguage(), $!languageObject.getCountry()"></td>
-								<td class="nowrap"><a href="javascript: editContentlet('${contentletInode}','$!{currentURL}')"><span class="contentIcon" title="content"></span> $!{searchResult.title}</a></td>
-								<td>$!{searchResult.item.structureName}</td>
+								<!-- Status -->
+								<td class="nowrap">
+									#if($searchResult.status == "PUBLISHED")
+										<!--published icons-->
+										<span class="greyDotIcon" style="opacity:.4"></span>
+										<span class="liveIcon"></span>
+									#elseif($searchResult.status == "UNPUBLISHED")
+										<!--unpublished icons -->
+										<span class="workingIcon"></span><span class="greyDotIcon" style="opacity:.4"></span>
+									#elseif($searchResult.status == "ARCHIVED")
+										<!--archived icons-->
+										<span class="greyDotIcon" style="opacity:.4"></span><span class="archivedIcon"></span>
+									#elseif($searchResult.status == "SAVED")
+										<!--unpublished changes icons-->
+										<span class="workingIcon"></span><span class="liveIcon"></span>
+									#else
+										<!--published icons-->
+										<span class="greyDotIcon" style="opacity:.4"></span>
+										<span class="liveIcon"></span>
+									#end
+								</td>
+								
+								<!-- Language Image -->
+								<td align="center"><img width="16px" height="11px" src="$!{imageFlagURL}" class="country-flag" title="$!{imageFlagTitle}"></td>
+								
+								<!-- Title + URL -->
+								<td><a href="$!{inode}">$!{inodeTitle}</a></td>
+								
+								<!-- Type -->
+								<td>$!{type}</td>
+								
+								<!-- Field -->
 								<td>$!{searchResult.fieldName}</td>
-								<td class="nowrap"><span class="hostIcon"></span> ${searchResult.hostName}</td>
-								<td> #foreach($snippet in $searchResult.snippets)
-								#set( $htmlEncodedString = $webapi.htmlEncode($!snippet.toLowerCase()) )
-								#set( $htmlEncodedTextParam = $webapi.htmlEncode($!textParam.toLowerCase()) )
-								<div class="snippet">
-									$!portletviewtool.replaceHTMLEncodedTextWithMatchHighlight($htmlEncodedString, $htmlEncodedTextParam)
-								</div> #end </td>
+								
+								<!-- Host -->
+								<td class="nowrap"><span class="hostIcon"></span> $!{searchResult.hostName}</td>
+								
+								<!-- Snippet -->
+								<td>
+									#foreach($snippet in $searchResult.snippets)
+										#set( $htmlEncodedString = $webapi.htmlEncode($!snippet.toLowerCase()) )
+									
+										#if($searchMode == "TEXT")
+											#set( $htmlEncodedTextParam = $webapi.htmlEncode($!textParam.toLowerCase()) )
+										#else
+											#set( $htmlEncodedTextParam = $webapi.htmlEncode($!textParam) )
+										#end
+									
+									<div class="snippet">
+										$!portletviewtool.replaceHTMLEncodedTextWithMatchHighlight($htmlEncodedString, $htmlEncodedTextParam, $searchMode)
+									</div>
+									#end
+								</td>
 							</tr>
+							
 						#end
-						
-						#foreach($searchResult in $foundWidgets)
-	
-							#set($languageObject = $languagewebapi.getLanguage("${searchResult.item.languageId}"))
-							#set($contentletInode = ${searchResult.item.inode})
-							#set($imageFlagURL = "/html/images/languages/"+ $languageObject.getLanguageCode() +"_"+ $languageObject.getCountryCode()+".gif")
-		
-							<tr>
-								<td class="nowrap"> #if($searchResult.status == "PUBLISHED") <!--published icons--><span class="greyDotIcon" style="opacity:.4"></span><span class="liveIcon"></span> #elseif($searchResult.status == "UNPUBLISHED") <!--unpublished icons --><span class="workingIcon"></span><span class="greyDotIcon" style="opacity:.4"></span> #elseif($searchResult.status == "ARCHIVED") <!--archived icons--><span class="greyDotIcon" style="opacity:.4"></span><span class="archivedIcon"></span> #elseif($searchResult.status == "SAVED") <!--unpublished changes icons--><span class="workingIcon"></span><span class="liveIcon"></span> #end </td>
-								<td align="center"><img width="16px" height="11px" src="$!{imageFlagURL}" class="country-flag" title="$!languageObject.getLanguage(), $!languageObject.getCountry()"></td>
-								<td class="nowrap"><a href="javascript: editContentlet('${contentletInode}','$!{currentURL}')"><span class="gearIcon" title="widget"></span> $!{searchResult.item.widgetTitle}</a></td>
-								<td>$!{searchResult.item.structureName}</td>
-								<td>$!{searchResult.fieldName}</td>
-								<td class="nowrap"><span class="hostIcon"></span> ${searchResult.hostName}</td>
-								<td> #foreach($snippet in $searchResult.snippets)
-								#set( $htmlEncodedString = $webapi.htmlEncode($!snippet.toLowerCase()) )
-								#set( $htmlEncodedTextParam = $webapi.htmlEncode($!textParam.toLowerCase()) )
-								<div class="snippet">
-									$!portletviewtool.replaceHTMLEncodedTextWithMatchHighlight($htmlEncodedString, $htmlEncodedTextParam)
-								</div> #end </td>
-							</tr>
-						#end
-						
-						#foreach($searchResult in $foundStructures)
-	
-							#set($structureInode = ${searchResult.item.inode})							
-		
-							<tr>
-								<td class="nowrap"> <!--published icons--><span class="greyDotIcon" style="opacity:.4"></span><span class="liveIcon"></span></td>
-								<td align="center"><img width="16px" height="11px" src="/html/images/languages/all.gif" class="country-flag"></td>
-								<td class="nowrap"><a href="javascript: editStructure('${structureInode}');"><span class="structureIcon" title="structure"></span>$!{searchResult.title}</a></td>
-								<td>$!{searchResult.item.name} (Structure)</td>
-								<td>$!{searchResult.fieldName}</td>
-								<td class="nowrap"><span class="hostIcon"></span> ${searchResult.hostName}</td>
-								<td> #foreach($snippet in $searchResult.snippets)
-								#set( $htmlEncodedString = $webapi.htmlEncode($!snippet.toLowerCase()) )
-								#set( $htmlEncodedTextParam = $webapi.htmlEncode($!textParam.toLowerCase()) )
-								<div class="snippet">
-									$!portletviewtool.replaceHTMLEncodedTextWithMatchHighlight($htmlEncodedString, $htmlEncodedTextParam)
-								</div> #end </td>
-							</tr>
-						#end
-						
-						#foreach($searchResult in $templates)
-	
-							#set($templateInode = ${searchResult.item.inode})
-		
-							<tr>
-								<td class="nowrap"> #if($searchResult.status == "PUBLISHED") <!--published icons--><span class="greyDotIcon" style="opacity:.4"></span><span class="liveIcon"></span> #elseif($searchResult.status == "UNPUBLISHED") <!--unpublished icons --><span class="workingIcon"></span><span class="greyDotIcon" style="opacity:.4"></span> #elseif($searchResult.status == "ARCHIVED") <!--archived icons--><span class="greyDotIcon" style="opacity:.4"></span><span class="archivedIcon"></span> #elseif($searchResult.status == "SAVED") <!--unpublished changes icons--><span class="workingIcon"></span><span class="liveIcon"></span> #end </td>
-								<td align="center"><img width="16px" height="11px" src="/html/images/languages/all.gif" class="country-flag"></td>
-								<td class="nowrap"><a href="javascript: editTemplate('${templateInode}','$!{currentURL}')"><span class="templateIcon" title="template"></span> $!{searchResult.title}</a></td>
-								<td>Template</td>
-								<td>$!{searchResult.fieldName}</td>
-								<td class="nowrap"><span class="hostIcon"></span> ${searchResult.hostName}</td>
-								<td> #foreach($snippet in $searchResult.snippets)
-								#set( $htmlEncodedString = $webapi.htmlEncode($!snippet.toLowerCase()) )
-								#set( $htmlEncodedTextParam = $webapi.htmlEncode($!textParam.toLowerCase()) )
-								<div class="snippet">
-									$!portletviewtool.replaceHTMLEncodedTextWithMatchHighlight($htmlEncodedString, $htmlEncodedTextParam)
-								</div> #end </td>
-							</tr>
-						#end
-						
-						#foreach($searchResult in $foundFiles)
-	
-							#set($languageObject = $languagewebapi.getLanguage("${searchResult.item.languageId}"))
-							#set($filesInode = ${searchResult.item.inode})
-							#set($imageFlagURL = "/html/images/languages/"+ $languageObject.getLanguageCode() +"_"+ $languageObject.getCountryCode()+".gif")
-		
-							<tr>
-								<td class="nowrap"> #if($searchResult.status == "PUBLISHED") <!--published icons--><span class="greyDotIcon" style="opacity:.4"></span><span class="liveIcon"></span> #elseif($searchResult.status == "UNPUBLISHED") <!--unpublished icons --><span class="workingIcon"></span><span class="greyDotIcon" style="opacity:.4"></span> #elseif($searchResult.status == "ARCHIVED") <!--archived icons--><span class="greyDotIcon" style="opacity:.4"></span><span class="archivedIcon"></span> #elseif($searchResult.status == "SAVED") <!--unpublished changes icons--><span class="workingIcon"></span><span class="liveIcon"></span> #end </td>
-								<td align="center"><img width="16px" height="11px" src="$!{imageFlagURL}" class="country-flag" title="$!languageObject.getLanguage(), $!languageObject.getCountry()"></td>
-								<td class="nowrap"><a href="javascript: editContentlet('${filesInode}','$!{currentURL}')"><span class="fileIcon" title="file"></span> $!{searchResult.item.path}$!{searchResult.item.fileName}</a></td>
-								<td>File</td>
-								<td>$!{searchResult.fieldName}</td>
-								<td class="nowrap"><span class="hostIcon"></span> ${searchResult.hostName}</td>
-								<td> #foreach($snippet in $searchResult.snippets)
-								#set( $htmlEncodedString = $webapi.htmlEncode($!snippet.toLowerCase()) )
-								#set( $htmlEncodedTextParam = $webapi.htmlEncode($!textParam.toLowerCase()) )
-								<div class="snippet">
-									$!portletviewtool.replaceHTMLEncodedTextWithMatchHighlight($htmlEncodedString, $htmlEncodedTextParam)
-								</div> #end </td>
-							</tr>
-						#end
-						
-						#foreach($searchResult in $foundHtmlPages)
-							<tr>
-								<td class="nowrap"> #if($searchResult.status == "PUBLISHED") <!--published icons--><span class="greyDotIcon" style="opacity:.4"></span><span class="liveIcon"></span> #elseif($searchResult.status == "UNPUBLISHED") <!--unpublished icons --><span class="workingIcon"></span><span class="greyDotIcon" style="opacity:.4"></span> #elseif($searchResult.status == "ARCHIVED") <!--archived icons--><span class="greyDotIcon" style="opacity:.4"></span><span class="archivedIcon"></span> #elseif($searchResult.status == "SAVED") <!--unpublished changes icons--><span class="workingIcon"></span><span class="liveIcon"></span> #end </td>
-								<td align="center"><img width="16px" height="11px" src="/html/images/languages/all.gif" class="country-flag"></td>
-								<td class="nowrap"><a href="$!{searchResult.item.URI}"><span class="pageIcon" title="HTML page"></span> $!{searchResult.title}</a></td>
-								<td>HTML Page</td>
-								<td>$!{searchResult.fieldName}</td>
-								<td class="nowrap"><span class="hostIcon"></span> ${searchResult.hostName}</td>
-								<td> #foreach($snippet in $searchResult.snippets)
-								#set( $htmlEncodedString = $webapi.htmlEncode($!snippet.toLowerCase()) )
-								#set( $htmlEncodedTextParam = $webapi.htmlEncode($!textParam.toLowerCase()) )
-								<div class="snippet">
-									$!portletviewtool.replaceHTMLEncodedTextWithMatchHighlight($htmlEncodedString, $htmlEncodedTextParam)
-								</div> #end </td>
-							</tr>
-						#end
-					#end
-				</table>
-				<div id="results_table_popup_menus"></div>
+					</table>
+					
+					<div id="results_table_popup_menus"></div>
+					<div class="clear"></div>
+					<!-- END Listing Results -->
+				</div>
+				#end
+				
+				#if($UtilMethods.isSet($pagination))
+				<!-- Start Pagination -->
+				<div class="yui-gb buttonRow">
+					<div class="yui-u first" style="text-align:left; width: 10%;">
+							<div id="previousDiv" style="display: none;">
+									<button dojoType="dijit.form.Button" onClick="previousPage($!{pagination.currentPage});return false;" iconClass="previousIcon" id="previousDivButton">
+											Previous
+									</button>
+							</div>&nbsp;
+					</div>
+					<div id="pagesdiv" class="yui-u" style="width:75%;">
+							<div id="matchingResultsBottomDiv"></div>
+					</div>
+					<div class="yui-u" style="text-align:right; width: 10%;">
+							<div id="nextDiv" style="display: none;">
+									<button dojoType="dijit.form.Button" onClick="nextPage($!{pagination.currentPage});return false;" iconClass="nextIcon" id="nextDivButton">
+											Next
+									</button>
+							</div>&nbsp;
+					</div>
+				</div>
+				<!-- END Pagination -->
+				#end
+				<div class="clear"></div>
+
 				<div class="clear"></div>
 				<!-- END Listing Results -->
 			</div>
@@ -420,7 +519,7 @@
 		items : [{
 			id : 'all',
 			type : 'All',
-			icon : '<span class="typeIcon"></span>'
+			icon : '<span class="typeIcon"><img width="16px" height="15px" src="/html/images/languages/all.gif" class="country-flag" title=""></span>'
 		}, {
 			id : 'container',
 			icon : '<span class="typeIcon container"></span>',
@@ -433,6 +532,10 @@
 			id : 'file',
 			icon : '<span class="typeIcon fileIcon"></span>',
 			type : 'File'
+		}, {
+			id : 'folder',
+			icon : '<span class="typeIcon folderIcon"></span>',
+			type : 'Folder'
 		}, {
 			id : 'htmlpage',
 			icon : '<span class="typeIcon pageIcon"></span>',
@@ -505,9 +608,9 @@
 	}
 
 	dojo.addOnLoad(resizeBrowser);
-	dojo.connect(window, "onresize", this, "resizeBrowser"); 
-	
-	
+	dojo.addOnLoad(initAdvancedSearch);
+	dojo.connect(window, "onresize", this, "resizeBrowser");
+
 	//Edit Objects Functions
 	function editFile (parentId, objId, userId, referer, live, working, write) {
 		var loc = '';
@@ -537,9 +640,143 @@
 		loc += '/c/portal/layout?p_l_id=71b8a1ca-37b6-4b6e-a43b-c7482f28db6c&p_p_id=EXT_11&p_p_action=1&p_p_state=maximized&p_p_mode=view&_EXT_11_struts_action=%2Fext%2Fcontentlet%2Fedit_contentlet&_EXT_11_cmd=edit&inode=' + objId + '&referer=' + encodeURIComponent(referer);
 		top.location = loc;
 	}
-	
+
 	function editStructure(inode){
 		var x ='/c/portal/layout?p_l_id=56fedb43-dbbf-4ce2-8b77-41fb73bad015&p_p_id=EXT_STRUCTURE&p_p_action=1&p_p_state=maximized&p_p_mode=view&_EXT_STRUCTURE_struts_action=%2Fext%2Fstructure%2Fedit_structure' + "&inode=" + inode;
 		window.location=x;
 	}
+	
+	function editFolder(objId, referer) {
+		var loc = '';
+		loc += '/c/portal/layout?p_l_id=b7ab5d3c-5ee0-4195-a17e-8f5579d718dd&p_p_id=EXT_BROWSER&p_p_action=1&p_p_state=maximized&p_p_mode=view&_EXT_BROWSER_struts_action=%2Fext%2Ffolders%2Fedit_folder&inode=' + objId + '&referer=' + encodeURIComponent(referer);
+		top.location = loc;
+	}
+
+	/**
+	 * The functions below have been copied from the dotCMS content portlet. To make it work with
+	 * the least effort, function names etc. have not been changed. DotCMS uses 'advanced search' to
+	 * identify the parts of the search fields that are hidden by default. It has nothing to do with the
+	 * name of our portlet itself.
+	 *
+	 * TODO: change these names
+	 */
+	function initAdvancedSearch(){
+		var x = dojo.cookie("ShAdDi");
+		if(x !=null && x != undefined && x != 0){
+			resizeAdvancedSearch();
+		}
+	}
+
+	function resizeAdvancedSearch(){
+		var start = dojo.getStyle(dojo.byId('advancedSearchOptions'),'height');
+		// how tall should we be
+		var end=(dojo.position(dojo.byId("measureTheHeightOfSearchTools")).y + 175) - dojo.position(dojo.byId("advancedSearchOptions")).y;
+
+		// resize
+
+		dojo.setStyle(dojo.byId('advancedSearchOptions'),'height', '0px');
+
+		dojo.animateProperty({
+	        node: dojo.byId("advancedSearchOptions"),
+	        properties: {
+	            height: {start: start, end: end, unit: "px"},
+	        },
+	        duration: 500
+	    }).play();
+		dojo.byId("toggleDivText").innerHTML="Hide";
+		dojo.cookie("ShAdDi", end, { });
+	}
+
+	function toggleAdvancedSearchDiv(){
+		// how tall are we
+		var showing = dojo.getStyle(dojo.byId('advancedSearchOptions'),'height');
+
+		// resize
+		if("0px" == showing || 0 ==showing){
+			dojo.cookie("ShAdDi", "0", { });
+			dojo.byId("toggleDivText").innerHTML="Hide";
+			resizeAdvancedSearch();
+		// hide
+		}else{
+
+			dojo.animateProperty({
+		        node: dojo.byId("advancedSearchOptions"),
+		        properties: {
+		            height: {start: showing, end: 0, unit: "px"},
+		        },
+		        duration: 500
+		    }).play();
+			dojo.cookie("ShAdDi", 0, { });
+			dojo.byId("toggleDivText").innerHTML="Advanced";
+		}
+	}
+
+	#if($UtilMethods.isSet($pagination))
+	
+		#set( $redirectUrl = $currentURL.replaceAll("&page=[^&]+", ""))
+		
+		showPagination($!{pagination.currentPage}, $!{pagination.total}, $!{pagination.begin}, $!{pagination.end}, $!{pagination.totalPages}, $!{pagination.hasNext}, $!{pagination.hasPrevious});
+
+		function showPagination (currentPage,num,begin,end,totalPages,hasNext,hasPrevious) {
+			var div = document.getElementById("metaMatchingResultsDiv");
+			div.style.display='';
+
+			//Top Matching Results
+			eval("totalContents=" + num + ";");
+
+			div = document.getElementById("matchingResultsDiv")
+			var strbuff = "<div class=\"yui-gb portlet-toolbar\"><div class=\"yui-u first\">showing " + begin + "-" + end + " of " + num + "</div><div id=\"tablemessage\" class=\"yui-u\" style=\"text-align:center;\">&nbsp</div><div class=\"yui-u\" style=\"text-align:right;\">";
+			strbuff+= "</div></div>";
+			div.innerHTML = strbuff;
+			div.style.display = "";
+			
+			//Bottom Matching Results
+			var div = document.getElementById("matchingResultsBottomDiv")
+			var strbuff = "<table border='0' width=\"100%\"><tr><td align='center' nowrap='true'><b>showing " + begin + " - " + end + " of " + num;
+			if(num > 0)
+			{
+				strbuff += " | pages ";
+				for(i = 4;i >= 1;i--)
+				{
+					var auxPage = currentPage - i;
+					if(auxPage >= 1)
+					{
+						strbuff += "<a href='$!{redirectUrl}&page=" + auxPage + "'> " + auxPage + "</a> ";
+					}
+				}
+				strbuff += " " + currentPage + " ";
+				for(i = 1;i <= 4;i++)
+				{
+					var auxPage = currentPage + i;
+					if(auxPage <= totalPages)
+					{
+						strbuff += "<a href='$!{redirectUrl}&page=" + auxPage + "'> " + auxPage + "</a> ";
+					}
+				}
+			}
+
+			strbuff += "</b></td></tr></table>";
+			div.innerHTML = strbuff;
+			
+			if (hasNext) {
+				document.getElementById("nextDiv").style.display = "";
+			} else {
+				document.getElementById("nextDiv").style.display = "none";
+			}
+
+			if (hasPrevious) {
+				document.getElementById("previousDiv").style.display = "";
+			} else {
+				document.getElementById("previousDiv").style.display = "none";
+			}
+		}
+		
+		function nextPage(currentPage) {
+			window.location.href = "$!{redirectUrl}&page=" + (currentPage + 1);
+		}
+		
+		function previousPage(currentPage) {
+			window.location.href = "$!{redirectUrl}&page=" + (currentPage - 1);
+		}
+	#end
 </script>

@@ -277,9 +277,7 @@ public class ContentletQuery {
 		try {
 			return APILocator.getContentletAPI().search(query.toString(), this.limit, this.offset, this.sortBy, APILocator.getUserAPI().getSystemUser(), false);
 			
-		} catch (DotDataException e) {
-			Logger.warn(this, "Exception while executing query", e);
-		} catch (DotSecurityException e) {
+		} catch (DotDataException | DotSecurityException e) {
 			Logger.warn(this, "Exception while executing query", e);
 		}
 		

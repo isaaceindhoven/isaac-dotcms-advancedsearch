@@ -2,6 +2,8 @@ package nl.isaac.dotcms.searcher.util;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import com.dotmarketing.util.Logger;
 
@@ -39,6 +41,11 @@ public final class ParamValidationUtil {
 			throw new IllegalArgumentException("Folder " + folder.getAbsolutePath() + " in parameter " + paramName + " is not a readble directory.");
 		}
 	}
+	
+	public static boolean isNullOrEmpty(String str) {
+		return str == null || str.trim().isEmpty();
+	}
+	
 	public static String emptyStringToNull(String str) {
 		return str == null || str.equals("")? null: str;
 	}
@@ -46,6 +53,18 @@ public final class ParamValidationUtil {
 	public static String emptyStringToNull(String str, String ifNullValue) {
 		String ret = str == null || str.equals("")? null: str;
 		return ret == null? ifNullValue: ret;
+	}
+	
+	public static boolean isValidRegex(String regex) {
+		boolean isValid = false;
+		try {
+			Pattern.compile(regex);
+			isValid = true;
+		} catch (PatternSyntaxException e) {
+			isValid = false;
+			Logger.info(ParamValidationUtil.class, "Invalid regex");
+		}
+		return isValid;
 	}
 	
 	public static String validateAsADirectory(String absoluteRoot, String dir, boolean createDir) {

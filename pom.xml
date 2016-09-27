@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>nl.isaac.dotcms.plugin.advancedsearch</groupId>
 	<artifactId>isaac-dotcms-advancedsearch</artifactId>
-	<version>3.2.0</version>
+	<version>3.5</version>
 	<packaging>bundle</packaging>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -37,8 +37,8 @@
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.5.1</version>
 					<configuration>
-						<source>1.6</source>
-						<target>1.6</target>
+						<source>1.8</source>
+						<target>1.8</target>
 					</configuration>
 				</plugin>
 			</plugins>
@@ -83,7 +83,7 @@
 		<dependency>
 			<groupId>com.dotcms</groupId>
 			<artifactId>dotcms</artifactId>
-			<version>3.2</version>
+			<version>3.5</version>
 			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
@@ -138,6 +138,18 @@
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
 			<version>2.5</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.dotcms.lib</groupId>
+			<artifactId>dot.log4j-api</artifactId>
+			<version>2.3_1</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.dotcms.lib</groupId>
+			<artifactId>dot.log4j-core</artifactId>
+			<version>2.3_1</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>

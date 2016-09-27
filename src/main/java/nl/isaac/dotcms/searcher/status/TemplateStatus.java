@@ -45,11 +45,7 @@ public class TemplateStatus implements StatusInterface {
 					status.setStatus(StatusEnum.ARCHIVED);
 					return status;
 				}
-			} catch (DotStateException e) {
-				throw new RuntimeException(e.toString(), e);
-			} catch (DotDataException e) {
-				throw new RuntimeException(e.toString(), e);
-			} catch (DotSecurityException e) {
+			} catch (DotStateException | DotDataException | DotSecurityException e) {
 				throw new RuntimeException(e.toString(), e);
 			}
 		}
