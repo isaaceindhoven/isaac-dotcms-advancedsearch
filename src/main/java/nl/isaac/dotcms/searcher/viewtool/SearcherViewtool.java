@@ -25,9 +25,9 @@ import nl.isaac.dotcms.searcher.shared.Version;
 import nl.isaac.dotcms.searcher.status.StatusFactory;
 import nl.isaac.dotcms.searcher.util.ContentletQuery;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.velocity.tools.view.tools.ViewTool;
 
+import com.dotcms.repackage.org.apache.commons.io.IOUtils;
 import com.dotmarketing.beans.Host;
 import com.dotmarketing.business.APILocator;
 import com.dotmarketing.cache.FieldsCache;
