@@ -66,27 +66,24 @@ public class PortletDAO {
 		return new ArrayList<Template>();
 	}
 
-	public List<Structure> getAllStructures(Host host, int offset, Integer limit) {
+	public List<Structure> getAllStructures(Host host) {
 		return StructureFactory.getStructures().stream().filter(s -> s.getHost().equals(host.getIdentifier()))
 				.collect(Collectors.toList());
 	}
 
-	public List<Contentlet> getWidgetContentlets(Host host, String languageId, Status status, int offset,
-			Integer limit) {
-		return getContentletsByStructureType(Structure.STRUCTURE_TYPE_WIDGET, host, languageId, status, offset, limit);
+	public List<Contentlet> getWidgetContentlets(Host host, String languageId, Status status) {
+		return getContentletsByStructureType(Structure.STRUCTURE_TYPE_WIDGET, host, languageId, status);
 	}
 
-	public List<Contentlet> getContentContentlets(Host host, String languageId, Status status, int offset,
-			Integer limit) {
-		return getContentletsByStructureType(Structure.STRUCTURE_TYPE_CONTENT, host, languageId, status, offset, limit);
+	public List<Contentlet> getContentContentlets(Host host, String languageId, Status status) {
+		return getContentletsByStructureType(Structure.STRUCTURE_TYPE_CONTENT, host, languageId, status);
 	}
 
-	public List<Contentlet> getFileContentlets(Host host, Status status, int offset, Integer limit) {
-		return getContentletsByStructureType(Structure.STRUCTURE_TYPE_FILEASSET, host, null, status, offset, limit);
+	public List<Contentlet> getFileContentlets(Host host, Status status) {
+		return getContentletsByStructureType(Structure.STRUCTURE_TYPE_FILEASSET, host, null, status);
 	}
 
-	private List<Contentlet> getContentletsByStructureType(int structureType, Host host, String languageId,
-			Status status, int offset, Integer limit) {
+	private List<Contentlet> getContentletsByStructureType(int structureType, Host host, String languageId, Status status) {
 		List<Structure> structuresPerType = getStructuresPerType(structureType);
 
 		if (structuresPerType.size() != 0) {
@@ -109,11 +106,6 @@ public class PortletDAO {
 				cq.addWorking(status.getStatus().getWorking());
 				cq.addLive(status.getStatus().getLive());
 			}
-
-			cq.setOffset(offset);
-
-			if (limit != null)
-				cq.setLimit(limit);
 
 			return cq.executeSafe();
 		}

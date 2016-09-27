@@ -43,42 +43,18 @@ public class BufferedSearchResultIterator implements Iterator<Map<Type, Collecti
 	private Host host;
 	private String languageId;
 	private Status status;
-
-	private final int offset;
-	private Integer limit;
-	private boolean searchAll;
-
+	
 	private int currentTypeIndex;
+	private boolean searchAll;
 	private boolean doneSearchingCurrentHost;
+	
 	private SearcherFilter searcherFilter;
 
-	public Type getType() {
-		return type;
-	}
-
-	public String getLanguageId() {
-		return languageId;
-	}
-
-	public Status getStatus() {
-		return status;
-	}
-
-	public int getLimit() {
-		return limit;
-	}
-
-	public Host getHost() {
-		return host;
-	}
-
-	public BufferedSearchResultIterator(SearcherFilter searcherFilter, Type type, String languageId, Status status, Integer limit) {
+	public BufferedSearchResultIterator(SearcherFilter searcherFilter, Type type, String languageId, Status status) {
 		this.searcherFilter = searcherFilter;
 		this.type = type;
 		this.languageId = !languageId.equalsIgnoreCase("0") ? languageId : "0";
 		this.status = status;
-		this.offset = 0;
-		this.limit = limit;
 	}
 
 	public void setBufferForNewHost(Host host) {
@@ -97,6 +73,22 @@ public class BufferedSearchResultIterator implements Iterator<Map<Type, Collecti
 			searchAll = false;
 			currentTypeIndex = types.indexOf(type);
 		}
+	}
+	
+	public Type getType() {
+		return type;
+	}
+
+	public String getLanguageId() {
+		return languageId;
+	}
+
+	public Status getStatus() {
+		return status;
+	}
+
+	public Host getHost() {
+		return host;
 	}
 
 	@Override
@@ -123,45 +115,55 @@ public class BufferedSearchResultIterator implements Iterator<Map<Type, Collecti
 		Map<Type, Collection<? extends Object>> portlets = new LinkedHashMap<>();
 
 		Type type = types.get(currentTypeIndex);
+		
+		int amountFound = 0;
 
 		switch (type) {
 		case CONTENT:
-			Collection<Contentlet> contents = portletDAO.getContentContentlets(host, languageId, status, offset, searcherFilter.spotsLeftAmount());
+			Collection<Contentlet> contents = portletDAO.getContentContentlets(host, languageId, status);
 			portlets.put(Type.CONTENT, contents);
+			amountFound = contents.size();
 			break;
 		case FILE:
-			Collection<Contentlet> files = portletDAO.getFileContentlets(host, status, offset, searcherFilter.spotsLeftAmount());
+			Collection<Contentlet> files = portletDAO.getFileContentlets(host, status);
 			portlets.put(Type.FILE, files);
+			amountFound = files.size();
 			break;
 		case WIDGET:
-			Collection<Contentlet> widgets = portletDAO.getWidgetContentlets(host, languageId, status, offset, searcherFilter.spotsLeftAmount());
+			Collection<Contentlet> widgets = portletDAO.getWidgetContentlets(host, languageId, status);
 			portlets.put(Type.WIDGET, widgets);
+			amountFound = widgets.size();
 			break;
 		case CONTAINER:
 			Collection<Container> containers = portletDAO.getAllContainers(host);
 			portlets.put(Type.CONTAINER, containers);
+			amountFound = containers.size();
 			break;
 		case STRUCTURE:
-			Collection<Structure> structures = portletDAO.getAllStructures(host, offset, searcherFilter.spotsLeftAmount());
+			Collection<Structure> structures = portletDAO.getAllStructures(host);
 			portlets.put(Type.STRUCTURE, structures);
+			amountFound = structures.size();
 			break;
 		case TEMPLATE:
 			Collection<Template> templates = portletDAO.getAllTemplates(host);
 			portlets.put(Type.TEMPLATE, templates);
+			amountFound = templates.size();
 			break;
 		case HTMLPAGE:
 			Collection<HTMLPage> htmlPages = portletDAO.getAllHTMLPages(host);
 			portlets.put(Type.HTMLPAGE, htmlPages);
+			amountFound = htmlPages.size();
 			break;
 		case FOLDER:
 			Collection<Folder> folders = folderDAO.getAllFolders(host);
 			portlets.put(Type.FOLDER, folders);
+			amountFound = folders.size();
 			break;
 		default:
 			break;
 		}
 		
-		Logger.info(this, "Found [unfiltered] " + portlets.size() + " " + type + "(s) for host: " + host.getHostname());
+		Logger.info(this, "Found [unfiltered] " + amountFound + " " + type + "(s) for host: " + host.getHostname());
 
 		if (searcherFilter.spotsLeft()) {
 			if (searchAll) {

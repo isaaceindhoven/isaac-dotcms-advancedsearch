@@ -39,7 +39,7 @@ public class SearcherService {
 
 		Collection<Host> hosts = new HostDAO().getHosts(userSearchValues.getHost());
 		
-		BufferedSearchResultIterator buffer = new BufferedSearchResultIterator(searcherFilter, userSearchValues.getType(), userSearchValues.getLanguageId(), userSearchValues.getStatus(), userSearchValues.getMaxResults());
+		BufferedSearchResultIterator buffer = new BufferedSearchResultIterator(searcherFilter, userSearchValues.getType(), userSearchValues.getLanguageId(), userSearchValues.getStatus());
 		
 		for (Host host : hosts) {
 			searcherFilter.setHost(host);
