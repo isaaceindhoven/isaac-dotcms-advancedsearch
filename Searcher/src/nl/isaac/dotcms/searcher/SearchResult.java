@@ -13,16 +13,12 @@ public class SearchResult {
 	private final String fieldName;
 	private final String fieldValue;
 	private final String snippet;
-	private final String hostName;
-	private final String title;
-	public SearchResult(Object item, String title, String fieldName, String fieldValue, String snippet, String hostName) {
+	public SearchResult(Object item, String fieldName, String fieldValue, String snippet) {
 		super();
 		this.item = item;
 		this.fieldName = fieldName;
 		this.fieldValue = fieldValue;
 		this.snippet = snippet;
-		this.hostName = hostName;
-		this.title = title;
 	}
 	public Object getItem() {
 		return item;
@@ -36,12 +32,7 @@ public class SearchResult {
 	public String getSnippet() {
 		return snippet;
 	}
-	public String getHostName() {
-		return hostName;
-	}
-	public String getTitle() {
-		return title;
-	}	
+	
 }
 
 enum SearchResultType {
