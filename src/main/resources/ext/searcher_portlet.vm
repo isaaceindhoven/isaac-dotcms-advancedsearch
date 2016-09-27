@@ -1,0 +1,545 @@
+<style>
+	.buttonBoxLeft {
+		top: 108px;
+		font-weight: bold;
+	}
+	#filterWrapper {
+		width: 350px;
+		overflow-y: auto;
+		overflow-x: hidden;
+		margin: 43px 0 0 5px;
+	}
+	#language_id_popup span {
+		width: 16px;
+		height: 11px;
+		display: inline-block;
+		vertical-align: middle;
+		margin: 3px 5px 3px 2px;
+	}
+	span.typeIcon {
+		width: 18px;
+		height: 18px;
+		display: inline-block;
+		vertical-align: middle;
+		margin: 3px 5px 3px 2px;
+	}
+	table.listingTable td {
+		vertical-align: top;
+	}
+	table.listingTable td.nowrap {
+		white-space: nowrap;
+	}
+	table.listingTable td .country-flag {
+		margin-top: 4px;
+	}
+	.snippet {
+		padding: 2px 4px;
+		color: #48484c;
+		background-color: #f7f7f9;
+		border: 1px solid #e1e1e8;
+		margin: 2px 0 8px 0;
+		-webkit-border-radius: 3px;
+		-moz-border-radius: 3px;
+		border-radius: 3px;
+		overflow: auto;
+	}
+	.snippet, .snippet pre {
+		font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+		font-size: 12px;
+		line-height: 1em;
+	}
+	.snippet .match {
+		background-color: yellow;
+	}
+	td .snippet:last-child {
+		margin-bottom: 4px;
+	}
+	.radioList > div {
+		height: 25px;
+	}
+</style>
+
+<script type="text/javascript">
+	function submitSearcherForm() {
+		document.getElementById('submitSearcherForm').submit();
+	}
+</script>
+
+#set($textParam = $request.getSession().getAttribute('searcher_text'))
+#if($UtilMethods.isSet($textParam))
+	#set($contentlets = $request.getSession().getAttribute('searcher_contentlets'))
+	#set($containers = $request.getSession().getAttribute('searcher_containers'))
+	#set($foundStructures = $request.getSession().getAttribute('searcher_structures'))
+	#set($templates = $request.getSession().getAttribute('searcher_templates'))
+	#set($foundFiles = $request.getSession().getAttribute('searcher_files'))
+	#set($foundHtmlPages = $request.getSession().getAttribute('searcher_htmlpages'))
+	#set($foundWidgets = $request.getSession().getAttribute('searcher_widgets'))
+	#set($hostParam = $request.getSession().getAttribute('searcher_host'))
+	#set($currentURL =  $request.getSession().getAttribute('searcher_referer'))
+	#set($status = $request.getSession().getAttribute('searcher_status'))
+	#set($version = $request.getSession().getAttribute('searcher_version'))
+	#set($language_id = $request.getSession().getAttribute('searcher_languageId'))
+	#set($type_id = $request.getSession().getAttribute('searcher_typeId'))
+	#set($resultSize = $contentlets.size() + $foundWidgets.size() + $containers.size() + $foundStructures.size() + $templates.size() + $foundFiles.size() + $foundHtmlPages.size())
+#else
+	#set($status = "all")
+	#set($language_id = 1)
+	#set($type_id = "all")
+	#set($version = "WORKING")
+#end
+
+#set($allHosts = $searcher.getAllHosts())
+#if(!$UtilMethods.isSet($hostParam))
+	#set($hostParam = $host.hostname)
+#end
+
+<div class="portlet-wrapper" >
+	<div class="buttonBoxLeft">
+		Advanced search
+	</div>
+	<form method="POST" action="/app/servlets/SearcherServlet" id="submitSearcherForm">
+		<input type="hidden" name="redirectPage" value="/c/portal/layout?$request.getQueryString()" />
+		<!-- START Split Screen -->
+		<div dojoType="dijit.layout.BorderContainer" design="sidebar" gutters="false" liveSplitters="true" id="borderContainer" class="shadowBox headerBox">
+			<!-- START Left Column -->
+			<div dojoType="dijit.layout.ContentPane" id="filterWrapper" splitter="false" region="leading" class="lineRight" >
+				<!-- START Advanced Search-->
+				<div id="advancedSearch">
+					<!-- Language dropdown-->
+					<dl>
+						<dt>
+							Language:
+						</dt>
+						<dd>
+							<div id="combo_language">
+								<input id="language_id"/>
+							</div>
+						</dd>
+					</dl>
+					<div class="clear"></div>
+					<!-- Hosts dropdown -->
+					<dl>
+						<dt>
+							Host:
+						</dt>
+						<dd>
+							<select dojoType="dijit.form.FilteringSelect" name="hostName">
+								<option value="all_hosts" #if($hostParam == "all_hosts")selected="selected"#end>All Hosts</option>
+								#foreach($hostName in $allHosts)
+									<option value="$hostName" #if($hostName.equals($hostParam))selected="selected"#end>$hostName</option>
+								#end
+							</select>
+						</dd>
+					</dl>
+					<div class="clear"></div>
+					<!--Keyword textfield-->
+					<dl>
+						<dt>
+							<a href="#" id="tip-keyword"><span class="hintIcon"></span></a>
+							<span dojoType="dijit.Tooltip" connectId="tip-keyword" position="above" style="width:100px;"> <span class="contentHint">Please enter your search in the keyword field.</span> </span>
+							Keyword:
+						</dt>
+						<dd>
+							<input type="text" dojoType="dijit.form.TextBox" required="true" name="text" value="$!textParam"/>
+						</dd>
+					</dl>
+					<div class="clear"></div>
+					<!-- Type dropdown-->
+					<dl>
+						<dt>
+							<a href="#" id="tip-type"><span class="hintIcon"></span></a>
+							<span dojoType="dijit.Tooltip" connectId="tip-type" position="above" style="width:100px;"> <span class="contentHint">Please select the type where the search engine will search for. <br />If you select 'All', the search engine will search for all the types in the list.</span> </span>
+							Type:
+						</dt>
+						<dd>
+							<div id="combo_type">
+								<input id="type_id" />
+							</div>
+							<input type="hidden" name="type_id" value="all">
+						</dd>
+					</dl>
+					<div class="clear"></div>
+					<!--Status radio-->
+					<dl>
+						<dt>
+							<a href="#" id="tip-status"><span class="hintIcon"></span></a>
+							<span dojoType="dijit.Tooltip" connectId="tip-status" position="above" style="width:100px;"> <span class="contentHint">Please select the status of the items: <ul><li>All: The search engine will search for the Published, Unpublished and Archived status</li><li>Published: The search engine will only search for Published items</li><li>Unpublished: The search engine will only search for Unpublished items</li><li>Archived: The search engine will only search for Archived items</li></ul></span> </span>
+							Status:
+						</dt>
+						<dd class="radioList">
+							<div>
+								<input type="radio" #if($status == "all") checked="checked" #end dojoType="dijit.form.RadioButton" name="status" id="status-all" value="all">
+								&nbsp;<label for="status-all">All</label>
+							</div>
+							<div>
+								<input type="radio" #if($status == "published") checked="checked" #end dojoType="dijit.form.RadioButton" name="status" id="status-published" value="published">
+								&nbsp;<label for="status-published">Published</label>
+							</div>
+							<div>
+								<input type="radio" #if($status == "unpublished") checked="checked" #end dojoType="dijit.form.RadioButton" name="status" id="status-unpublished" value="unpublished">
+								&nbsp;<label for="status-unpublished">Unpublished</label>
+							</div>
+							<div>
+								<input type="radio" #if($status == "archived") checked="checked" #end dojoType="dijit.form.RadioButton" name="status" id="status-archived" value="archived">
+								&nbsp;<label for="status-archived">Archived</label>
+							</div>
+						</dd>
+					</dl>
+					<div class="clear"></div>
+					<!--Version radio-->
+					<dl>
+						<dt>
+							<a href="#" id="tip-version"><span class="hintIcon"></span></a>
+							<span dojoType="dijit.Tooltip" connectId="tip-version" position="above" style="width:100px;"> <span class="contentHint">Please select the version of the items: <ul><li>Working version: This is the standard, when you click on the item in the search results you will go to the live version of that item.</li><li>Live version: The live version is the version you see actually on your website. If the live version isn't available, then the working version will be used</li></ul></span> </span>
+							Version:
+						</dt>
+						<dd class="radioList">
+							<div>
+								<input type="radio" #if($version == "WORKING") checked="checked" #end dojoType="dijit.form.RadioButton" name="version" id="version-working" value="WORKING">
+								&nbsp;<label for="version-working">Working version</label>
+							</div>
+							<div>
+								<input type="radio" #if($version == "LIVE") checked="checked" #end dojoType="dijit.form.RadioButton" name="version" id="version-live" value="LIVE">
+								&nbsp;<label for="version-live">Live version</label>
+							</div>
+						</dd>
+					</dl>
+					<div class="clear"></div>
+					<!--Buttons-->
+					<div class="buttonRow">
+						<button dojoType="dijit.form.Button" id="searchButton" type="submit" iconClass="searchIcon">
+							Search
+						</button>
+						<button dojoType="dijit.form.Button" id="clearButton" onclick="clearSearch();" iconClass="resetIcon">
+							Clear Search
+						</button>
+					</div>
+					<div class="clear"></div>
+				</div>
+			</div>
+			<!-- START Right Column -->
+			<div dojoType="dijit.layout.ContentPane" splitter="true" region="center" id="contentWrapper" style="overflow-y:auto; overflow-x:auto;margin:35px 0 0 0;">
+				<!-- START Listing Results -->
+				
+				<div id="matchingResultsDiv">
+					<div class="yui-gb portlet-toolbar">
+						<div class="yui-u first">
+							#if($UtilMethods.isSet($resultSize))
+								$!resultSize result(s) found for "<strong>$!textParam</strong>"
+							#end
+						</div>
+						<div id="tablemessage" class="yui-u" style="text-align:center;"></div>
+						<div class="yui-u" style="text-align:right;"></div>
+					</div>
+				</div>
+				
+				<table id="results_table" class="listingTable">
+					#if($!resultSize == 0 || !$UtilMethods.isSet($resultSize))
+					<tr>
+						<td>
+							<div class="noResultsMessage">No results found</div>
+						</td>
+					</tr>
+					
+					#else
+						<tr>
+							<th width="5"></th>
+							<th width="5"></th>
+							<th>Title</th>
+							<th>Type</th>
+							<th>Field</th>
+							<th>Host</th>
+							<th>Snippet</th>
+						</tr>
+						#foreach($searchResult in $containers)
+	
+							#set($containerInode = ${searchResult.item.inode})
+		
+							<tr>
+								<td class="nowrap">#if($searchResult.status == "PUBLISHED")<!--published icons--><span class="greyDotIcon" style="opacity:.4"></span><span class="liveIcon"></span>#elseif($searchResult.status == "UNPUBLISHED")<!--unpublished icons --><span class="workingIcon"></span><span class="greyDotIcon" style="opacity:.4"></span>#elseif($searchResult.status == "ARCHIVED")<!--archived icons--><span class="greyDotIcon" style="opacity:.4"></span><span class="archivedIcon"></span>#elseif($searchResult.status == "SAVED")<!--unpublished changes icons--><span class="workingIcon"></span><span class="liveIcon"></span>#end</td>
+								<td align="center"><img width="16px" height="11px" src="/html/images/languages/all.gif" class="country-flag"></td>
+								<td class="nowrap"><a href="javascript: editContainer('${containerInode}','$!{currentURL}')"><span class="container" title="container"></span> $!{searchResult.title}</a></td>
+								<td>Container</td>
+								<td>$!{searchResult.fieldName}</td>
+								<td class="nowrap"><span class="hostIcon"></span> ${searchResult.hostName}</td>
+								<td> #foreach($snippet in $searchResult.snippets)
+								#set( $htmlEncodedString = $webapi.htmlEncode($!snippet.toLowerCase()) )
+								#set( $htmlEncodedTextParam = $webapi.htmlEncode($!textParam.toLowerCase()) )
+								<div class="snippet">
+									$!portletviewtool.replaceHTMLEncodedTextWithMatchHighlight($htmlEncodedString, $htmlEncodedTextParam)
+								</div> #end </td>
+							</tr>
+						#end
+						
+						#foreach($searchResult in $contentlets)
+							#set($languageObject = $languagewebapi.getLanguage("${searchResult.item.languageId}"))
+							#set($contentletInode = ${searchResult.item.inode})
+							#set($imageFlagURL = "/html/images/languages/"+ $languageObject.getLanguageCode() +"_"+ $languageObject.getCountryCode()+".gif")
+		
+							<tr>
+								<td class="nowrap"> #if($searchResult.status == "PUBLISHED") <!--published icons--><span class="greyDotIcon" style="opacity:.4"></span><span class="liveIcon"></span> #elseif($searchResult.status == "UNPUBLISHED") <!--unpublished icons --><span class="workingIcon"></span><span class="greyDotIcon" style="opacity:.4"></span> #elseif($searchResult.status == "ARCHIVED") <!--archived icons--><span class="greyDotIcon" style="opacity:.4"></span><span class="archivedIcon"></span> #elseif($searchResult.status == "SAVED") <!--unpublished changes icons--><span class="workingIcon"></span><span class="liveIcon"></span> #end </td>
+								<td align="center"><img width="16px" height="11px" src="$!{imageFlagURL}" class="country-flag" title="$!languageObject.getLanguage(), $!languageObject.getCountry()"></td>
+								<td class="nowrap"><a href="javascript: editContentlet('${contentletInode}','$!{currentURL}')"><span class="contentIcon" title="content"></span> $!{searchResult.title}</a></td>
+								<td>$!{searchResult.item.structureName}</td>
+								<td>$!{searchResult.fieldName}</td>
+								<td class="nowrap"><span class="hostIcon"></span> ${searchResult.hostName}</td>
+								<td> #foreach($snippet in $searchResult.snippets)
+								#set( $htmlEncodedString = $webapi.htmlEncode($!snippet.toLowerCase()) )
+								#set( $htmlEncodedTextParam = $webapi.htmlEncode($!textParam.toLowerCase()) )
+								<div class="snippet">
+									$!portletviewtool.replaceHTMLEncodedTextWithMatchHighlight($htmlEncodedString, $htmlEncodedTextParam)
+								</div> #end </td>
+							</tr>
+						#end
+						
+						#foreach($searchResult in $foundWidgets)
+	
+							#set($languageObject = $languagewebapi.getLanguage("${searchResult.item.languageId}"))
+							#set($contentletInode = ${searchResult.item.inode})
+							#set($imageFlagURL = "/html/images/languages/"+ $languageObject.getLanguageCode() +"_"+ $languageObject.getCountryCode()+".gif")
+		
+							<tr>
+								<td class="nowrap"> #if($searchResult.status == "PUBLISHED") <!--published icons--><span class="greyDotIcon" style="opacity:.4"></span><span class="liveIcon"></span> #elseif($searchResult.status == "UNPUBLISHED") <!--unpublished icons --><span class="workingIcon"></span><span class="greyDotIcon" style="opacity:.4"></span> #elseif($searchResult.status == "ARCHIVED") <!--archived icons--><span class="greyDotIcon" style="opacity:.4"></span><span class="archivedIcon"></span> #elseif($searchResult.status == "SAVED") <!--unpublished changes icons--><span class="workingIcon"></span><span class="liveIcon"></span> #end </td>
+								<td align="center"><img width="16px" height="11px" src="$!{imageFlagURL}" class="country-flag" title="$!languageObject.getLanguage(), $!languageObject.getCountry()"></td>
+								<td class="nowrap"><a href="javascript: editContentlet('${contentletInode}','$!{currentURL}')"><span class="gearIcon" title="widget"></span> $!{searchResult.item.widgetTitle}</a></td>
+								<td>$!{searchResult.item.structureName}</td>
+								<td>$!{searchResult.fieldName}</td>
+								<td class="nowrap"><span class="hostIcon"></span> ${searchResult.hostName}</td>
+								<td> #foreach($snippet in $searchResult.snippets)
+								#set( $htmlEncodedString = $webapi.htmlEncode($!snippet.toLowerCase()) )
+								#set( $htmlEncodedTextParam = $webapi.htmlEncode($!textParam.toLowerCase()) )
+								<div class="snippet">
+									$!portletviewtool.replaceHTMLEncodedTextWithMatchHighlight($htmlEncodedString, $htmlEncodedTextParam)
+								</div> #end </td>
+							</tr>
+						#end
+						
+						#foreach($searchResult in $foundStructures)
+	
+							#set($structureInode = ${searchResult.item.inode})							
+		
+							<tr>
+								<td class="nowrap"> <!--published icons--><span class="greyDotIcon" style="opacity:.4"></span><span class="liveIcon"></span></td>
+								<td align="center"><img width="16px" height="11px" src="/html/images/languages/all.gif" class="country-flag"></td>
+								<td class="nowrap"><a href="javascript: editStructure('${structureInode}');"><span class="structureIcon" title="structure"></span>$!{searchResult.title}</a></td>
+								<td>$!{searchResult.item.name} (Structure)</td>
+								<td>$!{searchResult.fieldName}</td>
+								<td class="nowrap"><span class="hostIcon"></span> ${searchResult.hostName}</td>
+								<td> #foreach($snippet in $searchResult.snippets)
+								#set( $htmlEncodedString = $webapi.htmlEncode($!snippet.toLowerCase()) )
+								#set( $htmlEncodedTextParam = $webapi.htmlEncode($!textParam.toLowerCase()) )
+								<div class="snippet">
+									$!portletviewtool.replaceHTMLEncodedTextWithMatchHighlight($htmlEncodedString, $htmlEncodedTextParam)
+								</div> #end </td>
+							</tr>
+						#end
+						
+						#foreach($searchResult in $templates)
+	
+							#set($templateInode = ${searchResult.item.inode})
+		
+							<tr>
+								<td class="nowrap"> #if($searchResult.status == "PUBLISHED") <!--published icons--><span class="greyDotIcon" style="opacity:.4"></span><span class="liveIcon"></span> #elseif($searchResult.status == "UNPUBLISHED") <!--unpublished icons --><span class="workingIcon"></span><span class="greyDotIcon" style="opacity:.4"></span> #elseif($searchResult.status == "ARCHIVED") <!--archived icons--><span class="greyDotIcon" style="opacity:.4"></span><span class="archivedIcon"></span> #elseif($searchResult.status == "SAVED") <!--unpublished changes icons--><span class="workingIcon"></span><span class="liveIcon"></span> #end </td>
+								<td align="center"><img width="16px" height="11px" src="/html/images/languages/all.gif" class="country-flag"></td>
+								<td class="nowrap"><a href="javascript: editTemplate('${templateInode}','$!{currentURL}')"><span class="templateIcon" title="template"></span> $!{searchResult.title}</a></td>
+								<td>Template</td>
+								<td>$!{searchResult.fieldName}</td>
+								<td class="nowrap"><span class="hostIcon"></span> ${searchResult.hostName}</td>
+								<td> #foreach($snippet in $searchResult.snippets)
+								#set( $htmlEncodedString = $webapi.htmlEncode($!snippet.toLowerCase()) )
+								#set( $htmlEncodedTextParam = $webapi.htmlEncode($!textParam.toLowerCase()) )
+								<div class="snippet">
+									$!portletviewtool.replaceHTMLEncodedTextWithMatchHighlight($htmlEncodedString, $htmlEncodedTextParam)
+								</div> #end </td>
+							</tr>
+						#end
+						
+						#foreach($searchResult in $foundFiles)
+	
+							#set($languageObject = $languagewebapi.getLanguage("${searchResult.item.languageId}"))
+							#set($filesInode = ${searchResult.item.inode})
+							#set($imageFlagURL = "/html/images/languages/"+ $languageObject.getLanguageCode() +"_"+ $languageObject.getCountryCode()+".gif")
+		
+							<tr>
+								<td class="nowrap"> #if($searchResult.status == "PUBLISHED") <!--published icons--><span class="greyDotIcon" style="opacity:.4"></span><span class="liveIcon"></span> #elseif($searchResult.status == "UNPUBLISHED") <!--unpublished icons --><span class="workingIcon"></span><span class="greyDotIcon" style="opacity:.4"></span> #elseif($searchResult.status == "ARCHIVED") <!--archived icons--><span class="greyDotIcon" style="opacity:.4"></span><span class="archivedIcon"></span> #elseif($searchResult.status == "SAVED") <!--unpublished changes icons--><span class="workingIcon"></span><span class="liveIcon"></span> #end </td>
+								<td align="center"><img width="16px" height="11px" src="$!{imageFlagURL}" class="country-flag" title="$!languageObject.getLanguage(), $!languageObject.getCountry()"></td>
+								<td class="nowrap"><a href="javascript: editContentlet('${filesInode}','$!{currentURL}')"><span class="fileIcon" title="file"></span> $!{searchResult.item.path}$!{searchResult.item.fileName}</a></td>
+								<td>File</td>
+								<td>$!{searchResult.fieldName}</td>
+								<td class="nowrap"><span class="hostIcon"></span> ${searchResult.hostName}</td>
+								<td> #foreach($snippet in $searchResult.snippets)
+								#set( $htmlEncodedString = $webapi.htmlEncode($!snippet.toLowerCase()) )
+								#set( $htmlEncodedTextParam = $webapi.htmlEncode($!textParam.toLowerCase()) )
+								<div class="snippet">
+									$!portletviewtool.replaceHTMLEncodedTextWithMatchHighlight($htmlEncodedString, $htmlEncodedTextParam)
+								</div> #end </td>
+							</tr>
+						#end
+						
+						#foreach($searchResult in $foundHtmlPages)
+							<tr>
+								<td class="nowrap"> #if($searchResult.status == "PUBLISHED") <!--published icons--><span class="greyDotIcon" style="opacity:.4"></span><span class="liveIcon"></span> #elseif($searchResult.status == "UNPUBLISHED") <!--unpublished icons --><span class="workingIcon"></span><span class="greyDotIcon" style="opacity:.4"></span> #elseif($searchResult.status == "ARCHIVED") <!--archived icons--><span class="greyDotIcon" style="opacity:.4"></span><span class="archivedIcon"></span> #elseif($searchResult.status == "SAVED") <!--unpublished changes icons--><span class="workingIcon"></span><span class="liveIcon"></span> #end </td>
+								<td align="center"><img width="16px" height="11px" src="/html/images/languages/all.gif" class="country-flag"></td>
+								<td class="nowrap"><a href="$!{searchResult.item.URI}"><span class="pageIcon" title="HTML page"></span> $!{searchResult.title}</a></td>
+								<td>HTML Page</td>
+								<td>$!{searchResult.fieldName}</td>
+								<td class="nowrap"><span class="hostIcon"></span> ${searchResult.hostName}</td>
+								<td> #foreach($snippet in $searchResult.snippets)
+								#set( $htmlEncodedString = $webapi.htmlEncode($!snippet.toLowerCase()) )
+								#set( $htmlEncodedTextParam = $webapi.htmlEncode($!textParam.toLowerCase()) )
+								<div class="snippet">
+									$!portletviewtool.replaceHTMLEncodedTextWithMatchHighlight($htmlEncodedString, $htmlEncodedTextParam)
+								</div> #end </td>
+							</tr>
+						#end
+					#end
+				</table>
+				<div id="results_table_popup_menus"></div>
+				<div class="clear"></div>
+				<!-- END Listing Results -->
+			</div>
+		</div>
+	</form>
+</div>
+
+<script type="text/javascript">
+	//refresh the page and make sure post data is removed
+	function clearSearch() {
+		document.location.href = document.location;
+	}
+
+	var storeData = {
+		identifier : 'id',
+		imageurl : 'imageurl',
+		label : 'label',
+		items : [$!portletviewtool.getLanguagesSelector()]
+	}, storeDataType = {
+		identifier : 'id',
+		imageurl : 'imageurl',
+		label : 'label',
+		items : [{
+			id : 'all',
+			type : 'All',
+			icon : '<span class="typeIcon"></span>'
+		}, {
+			id : 'container',
+			icon : '<span class="typeIcon container"></span>',
+			type : 'Container'
+		}, {
+			id : 'content',
+			icon : '<span class="typeIcon contentIcon"></span>',
+			type : 'Content'
+		}, {
+			id : 'file',
+			icon : '<span class="typeIcon fileIcon"></span>',
+			type : 'File'
+		}, {
+			id : 'htmlpage',
+			icon : '<span class="typeIcon pageIcon"></span>',
+			type : 'HTML page'
+		}, {
+			id : 'structure',
+			icon : '<span class="typeIcon structureIcon"></span>',
+			type : 'Structure'
+		}, {
+			id : 'template',
+			icon : '<span class="typeIcon templateIcon"></span>',
+			type : 'Template'
+		}, {
+			id : 'widget',
+			icon : '<span class="typeIcon gearIcon"></span>',
+			type : 'Widget'
+		}]
+	}, langStore = new dojo.data.ItemFileReadStore({
+		data : storeData
+	}), languageSelect = new dijit.form.FilteringSelect({
+		id : "language_id",
+		name : "language_id",
+		value : '',
+		required : true,
+		store : langStore,
+		searchAttr : "lang",
+		labelAttr : "label",
+		labelType : "html",
+		onChange : function() {
+			var myselect = dijit.byId('language_id');
+			var imagestyle = "url('" + myselect.item.imageurl + "')";
+			var selField = dojo.query('#combo_language div.dijitInputField')[0];
+			dojo.style(selField, "backgroundImage", imagestyle);
+			dojo.style(selField, "backgroundRepeat", "no-repeat");
+			dojo.style(selField, "padding", "0px 0px 0px 25px");
+			dojo.style(selField, "backgroundColor", "transparent");
+			dojo.style(selField, "backgroundPosition", "3px 5px");
+		},
+		labelFunc : function(item, store) {
+			return store.getValue(item, "label");
+		}
+	}, dojo.byId("language_id")), typeStore = new dojo.data.ItemFileReadStore({
+		data : storeDataType
+	}), typeSelect = new dijit.form.FilteringSelect({
+		id : "type_id",
+		name : "type_id",
+		value : '',
+		required : true,
+		store : typeStore,
+		searchAttr : "type",
+		labelAttr : "label",
+		labelType : "html",
+		labelFunc : function(item, store) {
+			return store.getValue(item, "icon") + store.getValue(item, "type");
+		}
+	}, dojo.byId("type_id"));
+	/*set initial values*/
+	typeSelect.setValue('$type_id');
+	languageSelect.setValue('$language_id');
+	function resizeBrowser() {
+		var viewport = dijit.getViewport();
+		var viewport_height = viewport.h;
+		var e = dojo.byId("borderContainer");
+		dojo.style(e, "height", viewport_height - 150 + "px");
+		var e = dojo.byId("filterWrapper");
+		dojo.style(e, "height", viewport_height - 195 + "px");
+		var e = dojo.byId("contentWrapper");
+		dojo.style(e, "height", viewport_height - 230 + "px");
+		dijit.byId('borderContainer').resize()
+	}
+
+	dojo.addOnLoad(resizeBrowser);
+	dojo.connect(window, "onresize", this, "resizeBrowser"); 
+	
+	
+	//Edit Objects Functions
+	function editFile (parentId, objId, userId, referer, live, working, write) {
+		var loc = '';
+		if (isInodeSet(parentId)) {
+			loc += '/c/portal/layout?p_l_id=71b8a1ca-37b6-4b6e-a43b-c7482f28db6c&p_p_id=EXT_11&p_p_action=1&p_p_state=maximized&p_p_mode=view&_EXT_11_struts_action=%2Fext%2Ffiles%2Fedit_file&_EXT_11_cmd=edit&parent=' + parentId + "&inode=" + objId + '&userId=' + userId + '&referer=' + encodeURIComponent(referer);
+		}
+		else {
+			loc += '/c/portal/layout?p_l_id=71b8a1ca-37b6-4b6e-a43b-c7482f28db6c&p_p_id=EXT_11&p_p_action=1&p_p_state=maximized&p_p_mode=view&_EXT_11_struts_action=%2Fext%2Ffiles%2Fedit_file&_EXT_11_cmd=edit&inode=' + objId + '&userId=' + userId + '&referer=' + encodeURIComponent(referer);
+		}
+		top.location = loc;
+	}
+
+	function editTemplate (objId, referer) {
+		var loc = '';
+		loc += '/c/portal/layout?p_l_id=71b8a1ca-37b6-4b6e-a43b-c7482f28db6c&p_p_id=EXT_11&p_p_action=1&p_p_state=maximized&p_p_mode=view&_EXT_11_struts_action=%2Fext%2Ftemplates%2Fedit_template&_EXT_11_cmd=edit&inode=' + objId + '&referer=' + encodeURIComponent(referer);
+		top.location = loc;
+	}
+
+	function editContainer (objId, referer) {
+		var loc = '';
+		loc += '/c/portal/layout?p_l_id=71b8a1ca-37b6-4b6e-a43b-c7482f28db6c&p_p_id=EXT_11&p_p_action=1&p_p_state=maximized&p_p_mode=view&_EXT_11_struts_action=%2Fext%2Fcontainers%2Fedit_container&_EXT_11_cmd=edit&inode=' + objId + '&referer=' + encodeURIComponent(referer);
+		top.location = loc;
+	}
+
+	function editContentlet (objId, referer) {
+		var loc = '';
+		loc += '/c/portal/layout?p_l_id=71b8a1ca-37b6-4b6e-a43b-c7482f28db6c&p_p_id=EXT_11&p_p_action=1&p_p_state=maximized&p_p_mode=view&_EXT_11_struts_action=%2Fext%2Fcontentlet%2Fedit_contentlet&_EXT_11_cmd=edit&inode=' + objId + '&referer=' + encodeURIComponent(referer);
+		top.location = loc;
+	}
+	
+	function editStructure(inode){
+		var x ='/c/portal/layout?p_l_id=56fedb43-dbbf-4ce2-8b77-41fb73bad015&p_p_id=EXT_STRUCTURE&p_p_action=1&p_p_state=maximized&p_p_mode=view&_EXT_STRUCTURE_struts_action=%2Fext%2Fstructure%2Fedit_structure' + "&inode=" + inode;
+		window.location=x;
+	}
+</script>
