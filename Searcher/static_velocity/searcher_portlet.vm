@@ -11,21 +11,33 @@ function submitSearcherForm() {
   #set($foundStructures = $request.getSession().getAttribute('searcher_structures'))
   #set($templates = $request.getSession().getAttribute('searcher_templates'))
   #set($foundFiles = $request.getSession().getAttribute('searcher_files'))
+  #set($hostParam = $request.getSession().getAttribute('searcher_host'))
+#end
+
+#set($allHosts = $searcher.getAllHosts())
+#if(!$UtilMethods.isSet($hostParam))
+  #set($hostParam = $host.hostname)
 #end
 
 <table class="listingTable shadowBox">
 	<tbody><tr>
-		<th colspan="2">Search for Text in dotCMS</th>
-		<th width="350" style="text-align: center; white-space: nowrap;">Action</th>
+		<th colspan="3">Search for Text in dotCMS</th>
+		<th colspan="2" width="350" style="text-align: center; white-space: nowrap;" colspan="2">Action</th>
 	</tr>
 	<tr>
-		<td colspan="2">
+		<td colspan="3">
 		  <form method="POST" action="/servlets/SearcherServlet" id="submitSearcherForm">
 		     <input type="hidden" name="redirectPage" value="/c/portal/layout?$request.getQueryString()" />
 		     Search for the following text: <input type="text" name="text" value="$!textParam"/>
+			<select name="hostName">
+			  <option value="all_hosts" #if($hostParam == "all_hosts")selected="selected"#end>All Hosts</option>
+			  #foreach($hostName in $allHosts)
+				<option value="$hostName" #if($hostName.equals($hostParam))selected="selected"#end>$hostName</option>
+			  #end
+			</select>
            </form>
 		</td>
-		<td align="center">
+		<td align="center" colspan="2">
         <button dojoType="dijit.form.Button" onClick="submitSearcherForm();" iconClass="resetIcon">
              Search
         </button>
@@ -41,32 +53,39 @@ function submitSearcherForm() {
 	  #end
 	  </ul>
 	#end
-	
-    #if($UtilMethods.isSet($textParam))
-    <p>Last search for '$!textParam' was on $date.format('dd-MM-yyyy HH:mm:ss', $request.getSession().getAttribute('searcher_time'))</p>
+	<div class="yui-gb portlet-toolbar">
+    <h2>Text Search</h2>
+    #if($UtilMethods.isSet($textParam)) 
+	Last search for '$!textParam' was on $date.format('dd-MM-yyyy HH:mm:ss', $request.getSession().getAttribute('searcher_time'))
+	</div>
+	  #if($contentlets.size() > 0 || $containers.size() > 0 || $templates.size() > 0 || $foundStructures.size() > 0 || $foundFiles.size() > 0)
 	<tr>
 		<th>Title</th>
+		<th width="100" style="text-align: center; white-space: nowrap;">Host</th>
 		<th width="250" style="text-align: center; white-space: nowrap;">Snippet</th>
 		<th width="100" style="text-align: center; white-space: nowrap;">Type</th>
 		<th width="100" style="text-align: center; white-space: nowrap;">Field</th>
 	</tr>
 	      #foreach($searchResult in $contentlets)
-    <tr><td>${searchResult.item.title}</td><td style="text-align: center; white-space: nowrap;">$webapi.htmlEncode(${searchResult.snippet})</td><td style="text-align: center; white-space: nowrap;">${searchResult.item.structureName}</td><td style="text-align: center; white-space: nowrap;">${searchResult.fieldName}</td></tr>
+    <tr><td>$!{searchResult.title}</td><td style="text-align: center; white-space: nowrap;">${searchResult.hostName}</td><td style="text-align: center; white-space: nowrap;">$webapi.htmlEncode(${searchResult.snippet})</td><td style="text-align: center; white-space: nowrap;">${searchResult.item.structureName}</td><td style="text-align: center; white-space: nowrap;">${searchResult.fieldName}</td></tr>
           #end
 	      #foreach($searchResult in $containers)
-    <tr><td>${searchResult.item.title}</td><td style="text-align: center; white-space: nowrap;">$webapi.htmlEncode(${searchResult.snippet})</td><td style="text-align: center; white-space: nowrap;">Container</td><td style="text-align: center; white-space: nowrap;">${searchResult.fieldName}</td></tr>
+    <tr><td>$!{searchResult.title}</td><td style="text-align: center; white-space: nowrap;">${searchResult.hostName}</td><td style="text-align: center; white-space: nowrap;">$webapi.htmlEncode(${searchResult.snippet})</td><td style="text-align: center; white-space: nowrap;">Container</td><td style="text-align: center; white-space: nowrap;">${searchResult.fieldName}</td></tr>
           #end
 	      #foreach($searchResult in $templates)
-    <tr><td>${searchResult.item.title}</td><td style="text-align: center; white-space: nowrap;">$webapi.htmlEncode(${searchResult.snippet})</td><td style="text-align: center; white-space: nowrap;">Template</td><td style="text-align: center; white-space: nowrap;">${searchResult.fieldName}</td></tr>
+    <tr><td>$!{searchResult.title}</td><td style="text-align: center; white-space: nowrap;">${searchResult.hostName}</td><td style="text-align: center; white-space: nowrap;">$webapi.htmlEncode(${searchResult.snippet})</td><td style="text-align: center; white-space: nowrap;">Template</td><td style="text-align: center; white-space: nowrap;">${searchResult.fieldName}</td></tr>
           #end
 	      #foreach($searchResult in $foundStructures)
-    <tr><td>${searchResult.item.name}</td><td style="text-align: center; white-space: nowrap;">$webapi.htmlEncode(${searchResult.snippet})</td><td style="text-align: center; white-space: nowrap;">Structure</td><td style="text-align: center; white-space: nowrap;">${searchResult.fieldName}</td></tr>
+    <tr><td>$!{searchResult.title}</td><td style="text-align: center; white-space: nowrap;">${searchResult.hostName}</td><td style="text-align: center; white-space: nowrap;">$webapi.htmlEncode(${searchResult.snippet})</td><td style="text-align: center; white-space: nowrap;">Structure</td><td style="text-align: center; white-space: nowrap;">${searchResult.fieldName}</td></tr>
           #end
 	      #foreach($searchResult in $foundFiles)
-    <tr><td>${searchResult.item.path}${searchResult.item.fileName}</td><td style="text-align: center; white-space: nowrap;">$webapi.htmlEncode(${searchResult.snippet})</td><td style="text-align: center; white-space: nowrap;">File</td><td style="text-align: center; white-space: nowrap;">${searchResult.fieldName}</td></tr>
+    <tr><td>$!{searchResult.item.path}$!{searchResult.item.fileName}</td><td style="text-align: center; white-space: nowrap;">${searchResult.hostName}</td><td style="text-align: center; white-space: nowrap;">$webapi.htmlEncode(${searchResult.snippet})</td><td style="text-align: center; white-space: nowrap;">File</td><td style="text-align: center; white-space: nowrap;">${searchResult.fieldName}</td></tr>
           #end
-	#else
-    <tr><td colspan="3">No results were found.</td></tr>
+	  #else
+    <tr><td colspan="5">No results were found.</td></tr>
+      #end
+    #else
+    <tr><td colspan="5">No results were found.</td></tr>
     #end
 </tbody></table>
 
