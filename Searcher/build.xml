@@ -1,0 +1,3 @@
+<project name="Searcher plugin" default="build">	
+	<import file="../common.xml"/>	
+</project>

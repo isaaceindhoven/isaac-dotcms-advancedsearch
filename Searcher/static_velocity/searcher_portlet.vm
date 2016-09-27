@@ -1,0 +1,72 @@
+<script type="text/javascript">
+function submitSearcherForm() {
+  document.getElementById('submitSearcherForm').submit();
+}
+</script>
+
+#set($textParam = $request.getSession().getAttribute('searcher_text'))
+#if($UtilMethods.isSet($textParam))
+  #set($contentlets = $request.getSession().getAttribute('searcher_contentlets'))
+  #set($containers = $request.getSession().getAttribute('searcher_containers'))
+  #set($foundStructures = $request.getSession().getAttribute('searcher_structures'))
+  #set($templates = $request.getSession().getAttribute('searcher_templates'))
+  #set($foundFiles = $request.getSession().getAttribute('searcher_files'))
+#end
+
+<table class="listingTable shadowBox">
+	<tbody><tr>
+		<th colspan="2">Search for Text in dotCMS</th>
+		<th width="350" style="text-align: center; white-space: nowrap;">Action</th>
+	</tr>
+	<tr>
+		<td colspan="2">
+		  <form method="POST" action="/servlets/SearcherServlet" id="submitSearcherForm">
+		     <input type="hidden" name="redirectPage" value="/c/portal/layout?$request.getQueryString()" />
+		     Search for the following text: <input type="text" name="text" value="$!textParam"/>
+           </form>
+		</td>
+		<td align="center">
+        <button dojoType="dijit.form.Button" onClick="submitSearcherForm();" iconClass="resetIcon">
+             Search
+        </button>
+
+        </td>
+	</tr>
+	
+	#if($UtilMethods.isSet($request.getSession().getAttribute('searcher_errors')) && $request.getSession().getAttribute('searcher_errors').size() > 0)
+	  <h2 style="color:red">Errors</h2>
+	  <ul>
+	  #foreach($error in $request.getSession().getAttribute('searcher_errors'))
+	    <li>$error</li>
+	  #end
+	  </ul>
+	#end
+	
+    #if($UtilMethods.isSet($textParam))
+    <p>Last search for '$!textParam' was on $date.format('dd-MM-yyyy HH:mm:ss', $request.getSession().getAttribute('searcher_time'))</p>
+	<tr>
+		<th>Title</th>
+		<th width="250" style="text-align: center; white-space: nowrap;">Snippet</th>
+		<th width="100" style="text-align: center; white-space: nowrap;">Type</th>
+		<th width="100" style="text-align: center; white-space: nowrap;">Field</th>
+	</tr>
+	      #foreach($searchResult in $contentlets)
+    <tr><td>${searchResult.item.title}</td><td style="text-align: center; white-space: nowrap;">$webapi.htmlEncode(${searchResult.snippet})</td><td style="text-align: center; white-space: nowrap;">${searchResult.item.structureName}</td><td style="text-align: center; white-space: nowrap;">${searchResult.fieldName}</td></tr>
+          #end
+	      #foreach($searchResult in $containers)
+    <tr><td>${searchResult.item.title}</td><td style="text-align: center; white-space: nowrap;">$webapi.htmlEncode(${searchResult.snippet})</td><td style="text-align: center; white-space: nowrap;">Container</td><td style="text-align: center; white-space: nowrap;">${searchResult.fieldName}</td></tr>
+          #end
+	      #foreach($searchResult in $templates)
+    <tr><td>${searchResult.item.title}</td><td style="text-align: center; white-space: nowrap;">$webapi.htmlEncode(${searchResult.snippet})</td><td style="text-align: center; white-space: nowrap;">Template</td><td style="text-align: center; white-space: nowrap;">${searchResult.fieldName}</td></tr>
+          #end
+	      #foreach($searchResult in $foundStructures)
+    <tr><td>${searchResult.item.name}</td><td style="text-align: center; white-space: nowrap;">$webapi.htmlEncode(${searchResult.snippet})</td><td style="text-align: center; white-space: nowrap;">Structure</td><td style="text-align: center; white-space: nowrap;">${searchResult.fieldName}</td></tr>
+          #end
+	      #foreach($searchResult in $foundFiles)
+    <tr><td>${searchResult.item.path}${searchResult.item.fileName}</td><td style="text-align: center; white-space: nowrap;">$webapi.htmlEncode(${searchResult.snippet})</td><td style="text-align: center; white-space: nowrap;">File</td><td style="text-align: center; white-space: nowrap;">${searchResult.fieldName}</td></tr>
+          #end
+	#else
+    <tr><td colspan="3">No results were found.</td></tr>
+    #end
+</tbody></table>
+

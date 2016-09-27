@@ -1,0 +1,11 @@
+  <servlet>
+    <description></description>
+    <display-name>SearcherServlet</display-name>
+    <servlet-name>SearcherServlet</servlet-name>
+    <servlet-class>nl.isaac.dotcms.searcher.servlet.SearcherServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>SearcherServlet</servlet-name>
+    <url-pattern>/servlets/SearcherServlet</url-pattern>
+  </servlet-mapping>

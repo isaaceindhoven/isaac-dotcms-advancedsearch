@@ -1,0 +1,17 @@
+<portlet>
+	<portlet-name>EXT_SEARCHER</portlet-name>
+	<display-name>Text Searcher</display-name>
+	<portlet-class>com.liferay.portlet.VelocityPortlet</portlet-class>
+	<init-param>
+			<name>view-template</name>
+			<value>/static/plugins/Searcher/searcher_portlet.vm</value>
+	</init-param>
+	<expiration-cache>0</expiration-cache>
+	<supports>
+		<mime-type>text/html</mime-type>
+	</supports>
+	<resource-bundle>com.liferay.portlet.StrutsResourceBundle</resource-bundle>
+	<security-role-ref>
+		<role-name>CMS User</role-name>
+	</security-role-ref>
+</portlet>

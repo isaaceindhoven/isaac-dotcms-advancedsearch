@@ -1,0 +1,5 @@
+	<tool>
+		<key>searcher</key>
+		<scope>application</scope>
+		<class>nl.isaac.dotcms.searcher.viewtool.SearcherViewtool</class>
+	</tool>
