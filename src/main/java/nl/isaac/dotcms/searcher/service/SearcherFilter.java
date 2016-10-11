@@ -52,12 +52,13 @@ public class SearcherFilter {
 		ArrayList<PortletHit> hits = new ArrayList<PortletHit>(){
 			private static final long serialVersionUID = 1L;
 
-			public boolean add(PortletHit hit) {
-				if (hit != null) {
-					return super.add(hit);
+			@Override
+			public boolean addAll(Collection<? extends PortletHit> c) {
+				if (c != null) {
+					return super.addAll(c);
 				}
 				return false;
-			};
+			}
 		};
 
 		portletsToFilter.forEach((portletType, portletCollection) -> {
@@ -150,7 +151,7 @@ public class SearcherFilter {
 		
 		if (status.isValid()) {
 			FileAsset file = APILocator.getFileAssetAPI().fromContentlet(fileContentlet);
-			return filterAttributesAndGetHits(SearchableAttributesUtil.getFileAttributes(file), host.getHostname(), file, status.getActualStatus());
+			return filterAttributesAndGetHits(SearchableAttributesUtil.getFileAttributes(fileContentlet, file), host.getHostname(), file, status.getActualStatus());
 		}
 
 		return null;

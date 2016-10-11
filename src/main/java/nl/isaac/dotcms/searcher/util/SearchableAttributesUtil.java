@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.dotcms.repackage.org.apache.pdfbox.io.IOUtils;
+import com.dotmarketing.business.APILocator;
 import com.dotmarketing.cache.FieldsCache;
 import com.dotmarketing.portlets.containers.model.Container;
 import com.dotmarketing.portlets.contentlet.model.Contentlet;
@@ -39,7 +40,8 @@ public final class SearchableAttributesUtil<T> {
 	}
 	
 	public static Collection<SearchableAttribute> getContainerAttributes(Container container) {
-		Collection<SearchableAttribute> searchableAttributes = new ArrayList<>(3);
+		Collection<SearchableAttribute> searchableAttributes = new ArrayList<>(4);
+		searchableAttributes.add(new SearchableAttribute(Type.CONTAINER, container.getTitle(), "Title", container.getTitle()));
 		searchableAttributes.add(new SearchableAttribute(Type.CONTAINER, container.getTitle(), "Code", container.getCode()));
 		searchableAttributes.add(new SearchableAttribute(Type.CONTAINER, container.getTitle(), "Preloop", container.getPreLoop()));
 		searchableAttributes.add(new SearchableAttribute(Type.CONTAINER, container.getTitle(), "Postloop", container.getPostLoop()));
@@ -64,36 +66,53 @@ public final class SearchableAttributesUtil<T> {
 	}
 	
 	public static Collection<SearchableAttribute> getStructureAttributes(Structure structure) {
+		Logger.info(SearchableAttributesUtil.class, "Structure: " + structure.getName());
+		
 		Collection<SearchableAttribute> searchableAttributes = new ArrayList<>();
 		List<Field> fields = FieldsCache.getFieldsByStructureInode(structure.getInode());
 
 		for (Field f : fields) {
+			Logger.info(SearchableAttributesUtil.class, "Field: " + f.getFieldName());
 			if (f.getFieldType().equalsIgnoreCase(FieldType.CUSTOM_FIELD.toString())
 					|| f.getFieldType().equalsIgnoreCase(FieldType.TEXT_AREA.toString())
 					|| f.getVelocityVarName().equalsIgnoreCase("widgetCode")) {
 
-				searchableAttributes.add(new SearchableAttribute(Type.STRUCTURE, structure.getName(), f.getFieldName(),f.getValues() + " " + f.getDefaultValue()));
+				searchableAttributes.add(new SearchableAttribute(Type.STRUCTURE, structure.getName(), f.getFieldName(), f.getValues() + " " + f.getDefaultValue()));
 			}
 		}
 		
 		return searchableAttributes;
 	}
 	
-	public static Collection<SearchableAttribute> getFileAttributes(FileAsset file) {
+	public static Collection<SearchableAttribute> getFileAttributes(Contentlet fileContentlet, FileAsset file) {
 		Collection<SearchableAttribute> searchableAttributes = new ArrayList<>();
 		
-		if ("vtl".equalsIgnoreCase(file.getExtension()) || "js".equalsIgnoreCase(file.getExtension())) {
+		searchableAttributes.add(new SearchableAttribute(Type.FILE, file.getFileName(), "Name", file.getFileName()));
+		searchableAttributes.add(new SearchableAttribute(Type.FILE, file.getFileName(), "Title", file.getTitle()));
+		
+		Map<String, String> metaData = APILocator.getFileAssetAPI().getMetaDataMap(fileContentlet, file.getFileAsset());
+		
+		// ContentType returns: "text/plain; charset=ISO-8859-1"
+		if (metaData != null && metaData.containsKey("contentType")) {
+			String contentTypeWithCharacterSet = metaData.get("contentType");
+			String[] contentTypeWithCharacterSetArray = contentTypeWithCharacterSet.split(";");
 			
-			String fileText = null;
-			try {
-				fileText = new String(IOUtils.toByteArray(file.getFileInputStream()));
-			} catch (IOException e) {
-				Logger.warn(SearchableAttributesUtil.class, "Error while converting bytes to array of file: " + file.getFileName(), e);
+			if (contentTypeWithCharacterSetArray.length != 0) {
+				String contentType = contentTypeWithCharacterSetArray[0];
+				
+				if (contentType.equals("text/plain")) {
+					String fileText = null;
+					try {
+						fileText = new String(IOUtils.toByteArray(file.getFileInputStream()));
+					} catch (IOException e) {
+						Logger.warn(SearchableAttributesUtil.class, "Error while converting bytes to array of file: " + file.getFileName(), e);
+					}
+					searchableAttributes.add(new SearchableAttribute(Type.FILE, file.getFileName(), "Text of file", fileText));
+				}
 			}
-			
-			searchableAttributes.add(new SearchableAttribute(Type.FILE, file.getFileName(), "Text of file", fileText));
 		}
 		
+		// if ("vtl".equalsIgnoreCase(file.getExtension()) || "js".equalsIgnoreCase(file.getExtension()));
 		return searchableAttributes;
 	}
 	
@@ -110,7 +129,7 @@ public final class SearchableAttributesUtil<T> {
 		final String title = contentlet.getTitle();
 
 		row.entrySet().forEach((entry) -> {
-			if (entry.getValue() instanceof String) {
+			if (entry.getValue() instanceof String && !entry.getKey().equals("__DOTNAME__")) {
 				searchableAttributes.add(new SearchableAttribute(type, title, entry.getKey(), (String) entry.getValue()));
 			}
 		});
