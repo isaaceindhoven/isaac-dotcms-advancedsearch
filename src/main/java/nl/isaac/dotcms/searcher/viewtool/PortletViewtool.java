@@ -16,11 +16,11 @@ import com.dotmarketing.exception.DotDataException;
 import com.dotmarketing.exception.DotSecurityException;
 import com.dotmarketing.portlets.languagesmanager.model.Language;
 
-import nl.isaac.dotcms.searcher.SearchResult;
 import nl.isaac.dotcms.searcher.dao.HostDAO;
 import nl.isaac.dotcms.searcher.service.SearcherParser;
 import nl.isaac.dotcms.searcher.shared.PortletHit;
 import nl.isaac.dotcms.searcher.shared.SearchMode;
+import nl.isaac.dotcms.searcher.shared.SearchResult;
 import nl.isaac.dotcms.searcher.util.Pagination;
 
 public class PortletViewtool implements ViewTool {

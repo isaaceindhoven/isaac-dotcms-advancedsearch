@@ -10,7 +10,8 @@ public class PortletHit {
 	private final String name;
 	private final String value;
 
-	public PortletHit(Type type, String hostName, Object object, Status status, String title, String name, String value) {
+	public PortletHit(Type type, String hostName, Object object, Status status, String title, String name,
+			String value) {
 		super();
 		this.type = type;
 		this.hostName = hostName;

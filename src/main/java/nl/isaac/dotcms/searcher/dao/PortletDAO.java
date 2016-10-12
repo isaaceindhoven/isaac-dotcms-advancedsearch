@@ -83,34 +83,8 @@ public class PortletDAO {
 		return getContentletsByStructureType(Structure.STRUCTURE_TYPE_FILEASSET, host, null, status);
 	}
 
-	private List<Contentlet> getContentletsByStructureType(int structureType, Host host, String languageId, Status status) {
-		List<Structure> structuresPerType = getStructuresPerType(structureType);
-
-		if (structuresPerType.size() != 0) {
-			ContentletQuery cq = new ContentletQuery(structuresPerType);
-
-			if (structureType == Structure.STRUCTURE_TYPE_FILEASSET) {
-				cq.addHost(host.getIdentifier());
-			} else {
-
-				if (!languageId.equalsIgnoreCase("0")) {
-					cq.addLanguage(languageId);
-				}
-
-				cq.addHostAndIncludeSystemHost(host.getIdentifier());
-			}
-
-			if (!(status.getStatus().getLive() == false && status.getStatus().getWorking() == false
-					&& status.getStatus().getArchived() == false)) {
-				cq.addDeleted(status.getStatus().getArchived());
-				cq.addWorking(status.getStatus().getWorking());
-				cq.addLive(status.getStatus().getLive());
-			}
-
-			return cq.executeSafe();
-		}
-
-		return new ArrayList<Contentlet>();
+	public List<Contentlet> getHtmlContentlets(Host host, String languageId, Status status) {
+		return getContentletsByStructureType(Structure.STRUCTURE_TYPE_HTMLPAGE, host, languageId, status);
 	}
 
 	public List<HTMLPage> getAllHTMLPages(Host host) {
@@ -140,6 +114,37 @@ public class PortletDAO {
 		});
 
 		return structuresPerType;
+	}
+
+	private List<Contentlet> getContentletsByStructureType(int structureType, Host host, String languageId,
+			Status status) {
+		List<Structure> structuresPerType = getStructuresPerType(structureType);
+
+		if (structuresPerType.size() != 0) {
+			ContentletQuery cq = new ContentletQuery(structuresPerType);
+
+			if (structureType == Structure.STRUCTURE_TYPE_FILEASSET) {
+				cq.addHost(host.getIdentifier());
+			} else {
+
+				if (!languageId.equalsIgnoreCase("0")) {
+					cq.addLanguage(languageId);
+				}
+
+				cq.addHostAndIncludeSystemHost(host.getIdentifier());
+			}
+
+			if (!(status.getStatus().getLive() == false && status.getStatus().getWorking() == false
+					&& status.getStatus().getArchived() == false)) {
+				cq.addDeleted(status.getStatus().getArchived());
+				cq.addWorking(status.getStatus().getWorking());
+				cq.addLive(status.getStatus().getLive());
+			}
+
+			return cq.executeSafe();
+		}
+
+		return new ArrayList<Contentlet>();
 	}
 
 }

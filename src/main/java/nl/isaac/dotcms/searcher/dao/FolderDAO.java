@@ -36,5 +36,4 @@ public class FolderDAO {
 
 		return folders;
 	}
-
 }

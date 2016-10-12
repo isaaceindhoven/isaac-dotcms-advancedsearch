@@ -1,4 +1,4 @@
-package nl.isaac.dotcms.searcher.shared;
+package nl.isaac.dotcms.searcher.util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,11 +16,11 @@ public class FileTools {
 		List<FileAsset> workingFiles = new ArrayList<FileAsset>();
 		try {
 			List<Contentlet> allContent = APILocator.getContentletAPI().findAllContent(0, 0);
-			
-			for(Contentlet contentlet : allContent) {
+
+			for (Contentlet contentlet : allContent) {
 				Boolean isFileAsset = APILocator.getFileAssetAPI().isFileAsset(contentlet);
-				
-				if(isFileAsset && contentlet.isWorking()) {
+
+				if (isFileAsset && contentlet.isWorking()) {
 					workingFiles.add(APILocator.getFileAssetAPI().fromContentlet(contentlet));
 				}
 			}

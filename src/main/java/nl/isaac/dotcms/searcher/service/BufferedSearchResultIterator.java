@@ -20,6 +20,7 @@ import nl.isaac.dotcms.searcher.dao.FolderDAO;
 import nl.isaac.dotcms.searcher.dao.PortletDAO;
 import nl.isaac.dotcms.searcher.shared.Status;
 import nl.isaac.dotcms.searcher.shared.Type;
+import nl.isaac.dotcms.searcher.util.DotCMSVersionUtil;
 
 public class BufferedSearchResultIterator implements Iterator<Map<Type, Collection<? extends Object>>> {
 
@@ -43,11 +44,11 @@ public class BufferedSearchResultIterator implements Iterator<Map<Type, Collecti
 	private Host host;
 	private String languageId;
 	private Status status;
-	
+
 	private int currentTypeIndex;
 	private boolean searchAll;
 	private boolean doneSearchingCurrentHost;
-	
+
 	private SearcherFilter searcherFilter;
 
 	public BufferedSearchResultIterator(SearcherFilter searcherFilter, Type type, String languageId, Status status) {
@@ -59,13 +60,13 @@ public class BufferedSearchResultIterator implements Iterator<Map<Type, Collecti
 
 	public void setBufferForNewHost(Host host) {
 		Logger.info(this, "Buffer is set for host: " + host.getHostname());
-		
+
 		this.host = host;
-		
+
 		if (searcherFilter.spotsLeft()) {
 			doneSearchingCurrentHost = false;
 		}
-		
+
 		if (type == Type.ALL) {
 			searchAll = true;
 			currentTypeIndex = 0;
@@ -74,7 +75,7 @@ public class BufferedSearchResultIterator implements Iterator<Map<Type, Collecti
 			currentTypeIndex = types.indexOf(type);
 		}
 	}
-	
+
 	public Type getType() {
 		return type;
 	}
@@ -115,7 +116,6 @@ public class BufferedSearchResultIterator implements Iterator<Map<Type, Collecti
 		Map<Type, Collection<? extends Object>> portlets = new LinkedHashMap<>();
 
 		Type type = types.get(currentTypeIndex);
-		
 		int amountFound = 0;
 
 		switch (type) {
@@ -150,9 +150,20 @@ public class BufferedSearchResultIterator implements Iterator<Map<Type, Collecti
 			amountFound = templates.size();
 			break;
 		case HTMLPAGE:
-			Collection<HTMLPage> htmlPages = portletDAO.getAllHTMLPages(host);
-			portlets.put(Type.HTMLPAGE, htmlPages);
-			amountFound = htmlPages.size();
+			// Use the new HTML Contentlets
+			if (DotCMSVersionUtil.dotCMSVersion >= 3) {
+				Logger.info(this, "Searching HTML contentlets (dotCMS 3 or higher)");
+				List<Contentlet> htmlContentlets = portletDAO.getHtmlContentlets(host, languageId, status);
+				portlets.put(Type.HTML_CONTENTLET, htmlContentlets);
+				amountFound = htmlContentlets.size();
+			}
+			// Use the old HTML Pages
+			else {
+				Logger.info(this, "Searching HTML pages (dotCMS lower than 3) - old API");
+				Collection<HTMLPage> htmlPages = portletDAO.getAllHTMLPages(host);
+				portlets.put(Type.HTMLPAGE, htmlPages);
+				amountFound = htmlPages.size();
+			}
 			break;
 		case FOLDER:
 			Collection<Folder> folders = folderDAO.getAllFolders(host);
@@ -162,7 +173,7 @@ public class BufferedSearchResultIterator implements Iterator<Map<Type, Collecti
 		default:
 			break;
 		}
-		
+
 		Logger.info(this, "Found [unfiltered] " + amountFound + " " + type + "(s) for host: " + host.getHostname());
 
 		if (searcherFilter.spotsLeft()) {

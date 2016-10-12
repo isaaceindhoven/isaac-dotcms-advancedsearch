@@ -1,21 +1,20 @@
-package nl.isaac.dotcms.searcher;
+package nl.isaac.dotcms.searcher.shared;
 
 import java.util.List;
 
 import nl.isaac.dotcms.searcher.shared.Status.StatusEnum;
-import nl.isaac.dotcms.searcher.shared.Type;
 
 /**
-* dotCMS Searcher plugin by ISAAC - The Full Service Internet Agency is licensed 
-* under a Creative Commons Attribution 3.0 Unported License
-* - http://creativecommons.org/licenses/by/3.0/
-* - http://www.geekyplugins.com/
-* 
-* @copyright Copyright (c) 2012 ISAAC Software Solutions B.V. (http://www.isaac.nl)
-*/
+ * dotCMS Searcher plugin by ISAAC - The Full Service Internet Agency is
+ * licensed under a Creative Commons Attribution 3.0 Unported License -
+ * http://creativecommons.org/licenses/by/3.0/ - http://www.geekyplugins.com/
+ * 
+ * @copyright Copyright (c) 2012 ISAAC Software Solutions B.V.
+ *            (http://www.isaac.nl)
+ */
 
 public class SearchResult {
-	
+
 	private final Type type;
 	private final Object item;
 	private final String fieldName;
@@ -24,8 +23,9 @@ public class SearchResult {
 	private final String hostName;
 	private final String title;
 	private final StatusEnum status;
-	
-	public SearchResult(Type type, Object item, String title, String fieldName, String fieldValue, List<String> snippets, String hostName, StatusEnum status) {
+
+	public SearchResult(Type type, Object item, String title, String fieldName, String fieldValue,
+			List<String> snippets, String hostName, StatusEnum status) {
 		super();
 		this.type = type;
 		this.item = item;
@@ -36,7 +36,7 @@ public class SearchResult {
 		this.title = title;
 		this.status = status;
 	}
-	
+
 	public Type getType() {
 		return type;
 	}
@@ -68,12 +68,9 @@ public class SearchResult {
 	public String getStatus() {
 		return status.toString();
 	}
-	
+
 }
 
 enum SearchResultType {
-	STRUCTURE,
-	CONTENTLET,
-	TEMPLATE,
-	CONTAINER
+	STRUCTURE, CONTENTLET, TEMPLATE, CONTAINER
 }

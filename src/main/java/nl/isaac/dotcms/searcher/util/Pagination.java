@@ -4,13 +4,13 @@ public class Pagination {
 
 	private boolean hasNext;
 	private boolean hasPrevious;
-	
+
 	private int currentPage;
 	private int total;
 	private int begin;
 	private int end;
 	private int totalPages;
-	
+
 	public Pagination(int currentPage, int totalPages, int total, int begin, int end) {
 		super();
 		this.hasNext = currentPage < totalPages;
@@ -49,5 +49,5 @@ public class Pagination {
 	public int getTotalPages() {
 		return totalPages;
 	}
-	
+
 }

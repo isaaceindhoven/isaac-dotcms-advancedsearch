@@ -1,7 +1,9 @@
 package nl.isaac.dotcms.searcher.shared;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class UserSearchValues {
@@ -18,9 +20,10 @@ public class UserSearchValues {
 	private final String excludeText;
 	private final Integer maxResults;
 	private final int resultsPerPage;
-	
-	public UserSearchValues(SearchMode searchMode, Type type, String searchString, String host, String languageId, Status status,
-			Version version, int snippetSizeBefore, int snippetSizeAfter, String excludeText, Integer maxResults, int resultsPerPage) {
+
+	public UserSearchValues(SearchMode searchMode, Type type, String searchString, String host, String languageId,
+			Status status, Version version, int snippetSizeBefore, int snippetSizeAfter, String excludeText,
+			Integer maxResults, int resultsPerPage) {
 		super();
 		this.searchMode = searchMode;
 		this.type = type;
@@ -35,7 +38,7 @@ public class UserSearchValues {
 		this.maxResults = maxResults;
 		this.resultsPerPage = resultsPerPage;
 	}
-	
+
 	public String getSearchString() {
 		return searchString;
 	}
@@ -55,7 +58,7 @@ public class UserSearchValues {
 	public Version getVersion() {
 		return version;
 	}
-	
+
 	public SearchMode getSearchMode() {
 		return searchMode;
 	}
@@ -75,21 +78,21 @@ public class UserSearchValues {
 	public String getExcludeText() {
 		return excludeText;
 	}
-	
+
 	public int getResultsPerPage() {
 		return resultsPerPage;
 	}
-	
+
 	public Integer getMaxResults() {
 		return maxResults == 0 ? null : maxResults;
 	}
-	
+
 	public boolean searchAllResults() {
 		return this.maxResults == 0;
 	}
-	
+
 	public Map<String, Object> getAttributesMap() {
-		Map<String, Object> attributes = new HashMap<String, Object>();		
+		Map<String, Object> attributes = new HashMap<String, Object>();
 		attributes.put("searcher_time", Calendar.getInstance().getTime());
 		attributes.put("searcher_mode", this.searchMode.toString().toUpperCase());
 		attributes.put("searcher_text", this.searchString);
@@ -105,7 +108,25 @@ public class UserSearchValues {
 		attributes.put("searcher_resultsPerPage", this.resultsPerPage);
 		return attributes;
 	}
-	
+
+	public static List<String> getAttributeKeys() {
+		List<String> attributes = new ArrayList<String>();
+		attributes.add("searcher_time");
+		attributes.add("searcher_mode");
+		attributes.add("searcher_text");
+		attributes.add("searcher_host");
+		attributes.add("searcher_status");
+		attributes.add("searcher_version");
+		attributes.add("searcher_languageId");
+		attributes.add("searcher_typeId");
+		attributes.add("searcher_snippetSizeBefore");
+		attributes.add("searcher_snippetSizeAfter");
+		attributes.add("searcher_excludeText");
+		attributes.add("searcher_maxResults");
+		attributes.add("searcher_resultsPerPage");
+		return attributes;
+	}
+
 	@Override
 	public String toString() {
 		return "UserSearchValues [searchMode=" + searchMode + ", type=" + type + ", searchString=" + searchString
@@ -114,7 +135,5 @@ public class UserSearchValues {
 				+ ", excludeText=" + excludeText + ", maxResults=" + maxResults + ", resultsPerPage=" + resultsPerPage
 				+ "]";
 	}
-	
+
 }
-
-

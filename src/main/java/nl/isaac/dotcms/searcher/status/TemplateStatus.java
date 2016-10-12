@@ -1,15 +1,13 @@
 package nl.isaac.dotcms.searcher.status;
 
-import nl.isaac.dotcms.searcher.shared.Status;
-import nl.isaac.dotcms.searcher.shared.Status.StatusEnum;
-
 import com.dotmarketing.business.APILocator;
 import com.dotmarketing.business.DotStateException;
 import com.dotmarketing.exception.DotDataException;
 import com.dotmarketing.exception.DotSecurityException;
 import com.dotmarketing.portlets.templates.model.Template;
 
-
+import nl.isaac.dotcms.searcher.shared.Status;
+import nl.isaac.dotcms.searcher.shared.Status.StatusEnum;
 
 public class TemplateStatus implements StatusInterface {
 

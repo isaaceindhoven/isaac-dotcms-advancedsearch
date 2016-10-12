@@ -317,7 +317,7 @@
 					<button dojoType="dijit.form.Button" id="searchButton" type="submit" iconClass="searchIcon">
 						Search
 					</button>
-					<button dojoType="dijit.form.Button" id="clearButton" onclick="clearSearch();" iconClass="resetIcon">
+					<button dojoType="dijit.form.Button" onClick="clearSearch();" id="clearButton" iconClass="resetIcon">
 						Clear Search
 					</button>
 				</div>
@@ -354,7 +354,7 @@
 						
 						#foreach ($searchResult in $paginatedResults)
 							
-							#if($searchResult.type == "CONTENT" || $searchResult.type == "WIDGET" || $searchResult.type == "FILE")
+							#if($searchResult.type == "CONTENT" || $searchResult.type == "WIDGET" || $searchResult.type == "FILE" || $searchResult.type == "HTML_CONTENTLET")
 								#set($languageObject = $languagewebapi.getLanguage("${searchResult.item.languageId}"))
 								#set($imageFlagURL = "/html/images/languages/"+ $languageObject.getLanguageCode() +"_"+ $languageObject.getCountryCode()+".gif")
 								#set($imageFlagTitle = $!languageObject.getLanguage() + ", " + $!languageObject.getCountry())
@@ -367,7 +367,7 @@
 								#set($type = "Container")
 								#set($inode = "javascript: editContainer('$!{searchResult.item.inode}','$!{currentURL}')")
 								#set($inodeTitle = '<span class="container" title="container"></span> ' + $!{searchResult.title})
-							#elseif($searchResult.type == "CONTENT")
+							#elseif($searchResult.type == "CONTENT" || $searchResult.type == "HTML_CONTENTLET")
 								#set($type = $!{searchResult.item.structureName})
 								#set($inode = "javascript: editContentlet('$!{searchResult.item.inode}','$!{currentURL}')")
 								#set($inodeTitle = '<span class="contentIcon" title="content"></span> ' + $!{searchResult.title})
@@ -504,7 +504,8 @@
 <script type="text/javascript">
 	//refresh the page and make sure post data is removed
 	function clearSearch() {
-		document.location.href = document.location;
+		var redirectPage = '/c/portal/layout?$request.getQueryString()';
+		document.location.href = '/app/servlets/SearcherServlet?clearSearcherSession=true' + '&redirectPage=' + encodeURIComponent(redirectPage);
 	}
 
 	var storeData = {

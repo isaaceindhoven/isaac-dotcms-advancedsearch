@@ -1,4 +1,4 @@
-package nl.isaac.dotcms.searcher.util;
+package nl.isaac.dotcms.searcher.status;
 
 import com.dotmarketing.portlets.containers.model.Container;
 import com.dotmarketing.portlets.contentlet.model.Contentlet;
@@ -10,19 +10,16 @@ import nl.isaac.dotcms.searcher.shared.Status;
 import nl.isaac.dotcms.searcher.shared.Status.StatusEnum;
 import nl.isaac.dotcms.searcher.shared.Type;
 import nl.isaac.dotcms.searcher.shared.Version;
-import nl.isaac.dotcms.searcher.status.StatusFactory;
 
 @SuppressWarnings("deprecation")
 public class StatusValidator {
 
 	private final StatusFactory statusFactory;
-
 	private final Type type;
-
-	private Object portlet;
-
 	private final Status actualStatus;
-
+	
+	private Object portlet;
+	
 	public StatusValidator(Type type, Object portlet, Status expectingStatus) {
 		super();
 		this.statusFactory = new StatusFactory();
@@ -41,6 +38,7 @@ public class StatusValidator {
 			case CONTENT:
 			case FILE:
 			case WIDGET:
+			case HTML_CONTENTLET:
 				this.portlet = (Contentlet) this.portlet;
 				break;
 			case CONTAINER:

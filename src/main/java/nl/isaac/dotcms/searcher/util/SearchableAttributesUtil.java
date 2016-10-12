@@ -24,7 +24,7 @@ import nl.isaac.dotcms.searcher.shared.SearchableAttribute;
 import nl.isaac.dotcms.searcher.shared.Type;
 
 @SuppressWarnings("deprecation")
-public final class SearchableAttributesUtil<T> {
+public final class SearchableAttributesUtil {
 	
 	public SearchableAttributesUtil() {
 		super();
@@ -48,6 +48,7 @@ public final class SearchableAttributesUtil<T> {
 		return searchableAttributes;
 	}
 	
+	// Used for older dotCMS versions
 	public static Collection<SearchableAttribute> getHtmlPageAttributes(HTMLPage htmlPage) {
 		Collection<SearchableAttribute> searchableAttributes = new ArrayList<>(5);
 		searchableAttributes.add(new SearchableAttribute(Type.HTMLPAGE, htmlPage.getTitle(), "Title", htmlPage.getTitle()));
@@ -55,6 +56,13 @@ public final class SearchableAttributesUtil<T> {
 		searchableAttributes.add(new SearchableAttribute(Type.HTMLPAGE, htmlPage.getTitle(), "Meta Data", htmlPage.getMetadata()));
 		searchableAttributes.add(new SearchableAttribute(Type.HTMLPAGE, htmlPage.getTitle(), "SEO Description", htmlPage.getSeoDescription()));
 		searchableAttributes.add(new SearchableAttribute(Type.HTMLPAGE, htmlPage.getTitle(), "SEO Keywords", htmlPage.getSeoKeywords()));
+		return searchableAttributes;
+	}
+	
+	// Used for newer dotCMS versions
+	public static Collection<SearchableAttribute> getHtmlContentletAttributes(Contentlet htmlContentlet) {
+		Collection<SearchableAttribute> searchableAttributes = new ArrayList<>(1);
+		searchableAttributes.add(new SearchableAttribute(Type.HTMLPAGE, htmlContentlet.getTitle(), "Title", htmlContentlet.getTitle()));
 		return searchableAttributes;
 	}
 	
@@ -66,13 +74,10 @@ public final class SearchableAttributesUtil<T> {
 	}
 	
 	public static Collection<SearchableAttribute> getStructureAttributes(Structure structure) {
-		Logger.info(SearchableAttributesUtil.class, "Structure: " + structure.getName());
-		
 		Collection<SearchableAttribute> searchableAttributes = new ArrayList<>();
 		List<Field> fields = FieldsCache.getFieldsByStructureInode(structure.getInode());
 
 		for (Field f : fields) {
-			Logger.info(SearchableAttributesUtil.class, "Field: " + f.getFieldName());
 			if (f.getFieldType().equalsIgnoreCase(FieldType.CUSTOM_FIELD.toString())
 					|| f.getFieldType().equalsIgnoreCase(FieldType.TEXT_AREA.toString())
 					|| f.getVelocityVarName().equalsIgnoreCase("widgetCode")) {

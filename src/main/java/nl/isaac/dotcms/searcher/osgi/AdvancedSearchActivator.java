@@ -16,17 +16,17 @@ public class AdvancedSearchActivator extends ExtendedGenericBundleActivator {
 		initializeServices(context);
 
 		// Add the viewtools
-		addViewTool(context,  PortletViewtool.class, "portletviewtool", ViewToolScope.APPLICATION);
+		addViewTool(context, PortletViewtool.class, "portletviewtool", ViewToolScope.APPLICATION);
 
 		// Register the portlet
 		addPortlets(context);
 
 		// Register the servlet
 		addServlet(context, SearcherServlet.class, "/servlets/SearcherServlet");
-		
+
 		// Register language variables (portlet name)
 		addLanguageVariables(context);
-		
+
 	}
 
 	@Override
