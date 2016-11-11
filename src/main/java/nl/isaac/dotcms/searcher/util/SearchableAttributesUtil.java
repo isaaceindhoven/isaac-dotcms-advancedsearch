@@ -6,8 +6,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import com.dotcms.repackage.org.apache.pdfbox.io.IOUtils;
-import com.dotmarketing.business.APILocator;
+import com.dotcms.repackage.com.google.gson.JsonObject;
+import com.dotcms.repackage.com.google.gson.JsonParser;
+import com.dotcms.repackage.org.apache.commons.io.IOUtils;
+import com.dotcms.repackage.org.apache.commons.lang.StringUtils;
 import com.dotmarketing.cache.FieldsCache;
 import com.dotmarketing.portlets.containers.model.Container;
 import com.dotmarketing.portlets.contentlet.model.Contentlet;
@@ -95,14 +97,18 @@ public final class SearchableAttributesUtil {
 		searchableAttributes.add(new SearchableAttribute(Type.FILE, file.getFileName(), "Name", file.getFileName()));
 		searchableAttributes.add(new SearchableAttribute(Type.FILE, file.getFileName(), "Title", file.getTitle()));
 		
-		Map<String, String> metaData = APILocator.getFileAssetAPI().getMetaDataMap(fileContentlet, file.getFileAsset());
+		if (StringUtils.isBlank(file.getMetaData())) {
+			return searchableAttributes;
+		}
+		
+		JsonObject metaData = new JsonParser().parse(file.getMetaData()).getAsJsonObject();
 		
 		// ContentType returns: "text/plain; charset=ISO-8859-1"
-		if (metaData != null && metaData.containsKey("contentType")) {
-			String contentTypeWithCharacterSet = metaData.get("contentType");
+		if (metaData != null && metaData.has("contentType")) {
+			String contentTypeWithCharacterSet = metaData.get("contentType").getAsString();
 			String[] contentTypeWithCharacterSetArray = contentTypeWithCharacterSet.split(";");
 			
-			if (contentTypeWithCharacterSetArray.length != 0) {
+			if (contentTypeWithCharacterSetArray.length > 0) {
 				String contentType = contentTypeWithCharacterSetArray[0];
 				
 				if (contentType.equals("text/plain")) {
@@ -110,6 +116,7 @@ public final class SearchableAttributesUtil {
 					try {
 						fileText = new String(IOUtils.toByteArray(file.getFileInputStream()));
 					} catch (IOException e) {
+						fileText = "";
 						Logger.warn(SearchableAttributesUtil.class, "Error while converting bytes to array of file: " + file.getFileName(), e);
 					}
 					searchableAttributes.add(new SearchableAttribute(Type.FILE, file.getFileName(), "Text of file", fileText));
@@ -117,7 +124,6 @@ public final class SearchableAttributesUtil {
 			}
 		}
 		
-		// if ("vtl".equalsIgnoreCase(file.getExtension()) || "js".equalsIgnoreCase(file.getExtension()));
 		return searchableAttributes;
 	}
 	

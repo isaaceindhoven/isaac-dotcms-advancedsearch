@@ -9,7 +9,7 @@ public class DotCMSVersionUtil {
 	static {
 		String[] subVersions = ReleaseInfo.getVersion().split("\\.");
 
-		if (subVersions.length != 0) {
+		if (subVersions.length > 0) {
 			String currentDotCMSVersion = subVersions[0];
 			dotCMSVersion = Integer.valueOf(currentDotCMSVersion);
 		} else {
