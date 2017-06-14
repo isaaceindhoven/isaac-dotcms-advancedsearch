@@ -2,7 +2,6 @@ package nl.isaac.dotcms.searcher.status;
 
 import com.dotmarketing.portlets.containers.model.Container;
 import com.dotmarketing.portlets.contentlet.model.Contentlet;
-import com.dotmarketing.portlets.htmlpages.model.HTMLPage;
 import com.dotmarketing.portlets.structure.model.Structure;
 import com.dotmarketing.portlets.templates.model.Template;
 
@@ -11,7 +10,6 @@ import nl.isaac.dotcms.searcher.shared.Status.StatusEnum;
 import nl.isaac.dotcms.searcher.shared.Type;
 import nl.isaac.dotcms.searcher.shared.Version;
 
-@SuppressWarnings("deprecation")
 public class StatusValidator {
 
 	private final StatusFactory statusFactory;
@@ -43,9 +41,6 @@ public class StatusValidator {
 				break;
 			case CONTAINER:
 				this.portlet = (Container) this.portlet;
-				break;
-			case HTMLPAGE:
-				this.portlet = (HTMLPage) this.portlet;
 				break;
 			case STRUCTURE:
 				this.portlet = (Structure) this.portlet;

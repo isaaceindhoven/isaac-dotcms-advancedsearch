@@ -1,8 +1,4 @@
 <style>
-	.buttonBoxLeft {
-		top: 108px;
-		font-weight: bold;
-	}
 	#filterWrapper {
 		width: 350px;
 		overflow-y: auto;
@@ -110,9 +106,6 @@
 #end
 
 <div class="portlet-wrapper" >
-	<div class="buttonBoxLeft">
-		Advanced search
-	</div>
 	<form method="POST" action="/app/servlets/SearcherServlet" id="submitSearcherForm">
 		<input type="hidden" name="redirectPage" value="/c/portal/layout?$request.getQueryString()" />
 		<!-- START Split Screen -->
@@ -502,6 +495,8 @@
 </div>
 
 <script type="text/javascript">
+	var inFrame=true;
+
 	//refresh the page and make sure post data is removed
 	function clearSearch() {
 		var redirectPage = '/c/portal/layout?$request.getQueryString()';
@@ -616,41 +611,66 @@
 	function editFile (parentId, objId, userId, referer, live, working, write) {
 		var loc = '';
 		if (isInodeSet(parentId)) {
-			loc += '/c/portal/layout?p_l_id=71b8a1ca-37b6-4b6e-a43b-c7482f28db6c&p_p_id=EXT_11&p_p_action=1&p_p_state=maximized&p_p_mode=view&_EXT_11_struts_action=%2Fext%2Ffiles%2Fedit_file&_EXT_11_cmd=edit&parent=' + parentId + "&inode=" + objId + '&userId=' + userId + '&referer=' + encodeURIComponent(referer);
+			loc += '/c/portal/layout?p_l_id=71b8a1ca-37b6-4b6e-a43b-c7482f28db6c&p_p_id=content&p_p_action=1&p_p_state=maximized&p_p_mode=view&_content_struts_action=%2Fext%2Ffiles%2Fedit_file&_content_cmd=edit&parent=' + parentId + "&inode=" + objId + '&userId=' + userId + '&referer=' + encodeURIComponent(referer);
 		}
 		else {
-			loc += '/c/portal/layout?p_l_id=71b8a1ca-37b6-4b6e-a43b-c7482f28db6c&p_p_id=EXT_11&p_p_action=1&p_p_state=maximized&p_p_mode=view&_EXT_11_struts_action=%2Fext%2Ffiles%2Fedit_file&_EXT_11_cmd=edit&inode=' + objId + '&userId=' + userId + '&referer=' + encodeURIComponent(referer);
+			loc += '/c/portal/layout?p_l_id=71b8a1ca-37b6-4b6e-a43b-c7482f28db6c&p_p_id=content&p_p_action=1&p_p_state=maximized&p_p_mode=view&_content_struts_action=%2Fext%2Ffiles%2Fedit_file&_content_cmd=edit&inode=' + objId + '&userId=' + userId + '&referer=' + encodeURIComponent(referer);
 		}
-		top.location = loc;
+		
+		if (inFrame) {
+			window.location = loc;
+		} else{
+			top.location = loc;
+		}
 	}
 
 	function editTemplate (objId, referer) {
 		var loc = '';
-		loc += '/c/portal/layout?p_l_id=71b8a1ca-37b6-4b6e-a43b-c7482f28db6c&p_p_id=EXT_11&p_p_action=1&p_p_state=maximized&p_p_mode=view&_EXT_11_struts_action=%2Fext%2Ftemplates%2Fedit_template&_EXT_11_cmd=edit&inode=' + objId + '&referer=' + encodeURIComponent(referer);
-		top.location = loc;
+		loc += '/c/portal/layout?p_l_id=71b8a1ca-37b6-4b6e-a43b-c7482f28db6c&p_p_id=content&p_p_action=1&p_p_state=maximized&p_p_mode=view&_content_struts_action=%2Fext%2Ftemplates%2Fedit_template&_content_cmd=edit&inode=' + objId + '&referer=' + encodeURIComponent(referer);
+		
+		if (inFrame) {
+			window.location = loc;
+		} else{
+			top.location = loc;
+		}
 	}
 
 	function editContainer (objId, referer) {
 		var loc = '';
-		loc += '/c/portal/layout?p_l_id=71b8a1ca-37b6-4b6e-a43b-c7482f28db6c&p_p_id=EXT_11&p_p_action=1&p_p_state=maximized&p_p_mode=view&_EXT_11_struts_action=%2Fext%2Fcontainers%2Fedit_container&_EXT_11_cmd=edit&inode=' + objId + '&referer=' + encodeURIComponent(referer);
-		top.location = loc;
+		loc += '/c/portal/layout?p_l_id=71b8a1ca-37b6-4b6e-a43b-c7482f28db6c&p_p_id=content&p_p_action=1&p_p_state=maximized&p_p_mode=view&_content_struts_action=%2Fext%2Fcontainers%2Fedit_container&_content_cmd=edit&inode=' + objId + '&referer=' + encodeURIComponent(referer);
+		
+		if (inFrame) {
+			window.location = loc;
+		} else {
+			top.location = loc;
+		}
 	}
 
 	function editContentlet (objId, referer) {
 		var loc = '';
-		loc += '/c/portal/layout?p_l_id=71b8a1ca-37b6-4b6e-a43b-c7482f28db6c&p_p_id=EXT_11&p_p_action=1&p_p_state=maximized&p_p_mode=view&_EXT_11_struts_action=%2Fext%2Fcontentlet%2Fedit_contentlet&_EXT_11_cmd=edit&inode=' + objId + '&referer=' + encodeURIComponent(referer);
-		top.location = loc;
+		loc += '/c/portal/layout?p_l_id=71b8a1ca-37b6-4b6e-a43b-c7482f28db6c&p_p_id=content&p_p_action=1&p_p_state=maximized&p_p_mode=view&_content_struts_action=%2Fext%2Fcontentlet%2Fedit_contentlet&_content_cmd=edit&inode=' + objId + '&referer=' + encodeURIComponent(referer);
+		
+		if (inFrame) {
+			window.location = loc;
+		} else {
+			top.location = loc;
+		}
 	}
 
 	function editStructure(inode){
-		var x ='/c/portal/layout?p_l_id=56fedb43-dbbf-4ce2-8b77-41fb73bad015&p_p_id=EXT_STRUCTURE&p_p_action=1&p_p_state=maximized&p_p_mode=view&_EXT_STRUCTURE_struts_action=%2Fext%2Fstructure%2Fedit_structure' + "&inode=" + inode;
-		window.location=x;
+		var x ='/c/portal/layout?p_l_id=56fedb43-dbbf-4ce2-8b77-41fb73bad015&p_p_id=content-types&p_p_action=1&p_p_state=maximized&p_p_mode=view&_content_types_struts_action=%2Fext%2Fstructure%2Fedit_structure&inode=' + inode;
+		window.location = x;
 	}
 	
 	function editFolder(objId, referer) {
 		var loc = '';
-		loc += '/c/portal/layout?p_l_id=b7ab5d3c-5ee0-4195-a17e-8f5579d718dd&p_p_id=EXT_BROWSER&p_p_action=1&p_p_state=maximized&p_p_mode=view&_EXT_BROWSER_struts_action=%2Fext%2Ffolders%2Fedit_folder&inode=' + objId + '&referer=' + encodeURIComponent(referer);
-		top.location = loc;
+		loc += '/c/portal/layout?p_l_id=b7ab5d3c-5ee0-4195-a17e-8f5579d718dd&p_p_id=site-browser&p_p_action=1&p_p_state=maximized&p_p_mode=view&_site_browser_struts_action=%2Fext%2Ffolders%2Fedit_folder&inode=' + objId + '&referer=' + encodeURIComponent(referer);
+		
+		if (inFrame) {
+			window.location = loc;
+		} else {
+			top.location = loc;
+		}
 	}
 
 	/**

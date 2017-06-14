@@ -7,17 +7,12 @@ import java.util.Map;
 
 import com.dotmarketing.beans.Host;
 import com.dotmarketing.business.APILocator;
-import com.dotmarketing.business.DotStateException;
-import com.dotmarketing.exception.DotDataException;
-import com.dotmarketing.exception.DotSecurityException;
 import com.dotmarketing.portlets.containers.model.Container;
 import com.dotmarketing.portlets.contentlet.model.Contentlet;
 import com.dotmarketing.portlets.fileassets.business.FileAsset;
 import com.dotmarketing.portlets.folders.model.Folder;
-import com.dotmarketing.portlets.htmlpages.model.HTMLPage;
 import com.dotmarketing.portlets.structure.model.Structure;
 import com.dotmarketing.portlets.templates.model.Template;
-import com.dotmarketing.util.Logger;
 
 import nl.isaac.dotcms.searcher.shared.PortletHit;
 import nl.isaac.dotcms.searcher.shared.SearchableAttribute;
@@ -74,7 +69,6 @@ public class SearcherFilter {
 				case CONTAINER:			hits.addAll(filterContainer((Container) portletToFilter)); break;
 				case CONTENT:			hits.addAll(filterContent((Contentlet) portletToFilter)); break;
 				case FILE:				hits.addAll(filterFile((Contentlet) portletToFilter)); break;
-				case HTMLPAGE:			hits.addAll(filterHtmlPage((HTMLPage) portletToFilter)); break;
 				case HTML_CONTENTLET:	hits.addAll(filterHtmlContentlet((Contentlet) portletToFilter)); break;
 				case STRUCTURE:			hits.addAll(filterStructure((Structure) portletToFilter)); break;
 				case TEMPLATE:			hits.addAll(filterTemplate((Template) portletToFilter)); break;
@@ -164,26 +158,6 @@ public class SearcherFilter {
 			FileAsset file = APILocator.getFileAssetAPI().fromContentlet(fileContentlet);
 			return filterAttributesAndGetHits(SearchableAttributesUtil.getFileAttributes(fileContentlet, file),
 					host.getHostname(), file, status.getActualStatus());
-		}
-
-		return null;
-	}
-
-	private Collection<PortletHit> filterHtmlPage(HTMLPage htmlPage) {
-		StatusValidator status = new StatusValidator(Type.HTMLPAGE, htmlPage, this.userSearchValues.getStatus());
-
-		if (status.isValid()) {
-			Map<String, Object> row = null;
-
-			try {
-				row = htmlPage.getMap();
-				row.put("URI", htmlPage.getURI());
-			} catch (DotStateException | DotSecurityException | DotDataException e) {
-				Logger.warn(this, "Error while getting map of HTMLPage: " + htmlPage.getTitle(), e);
-			}
-
-			return filterAttributesAndGetHits(SearchableAttributesUtil.getHtmlPageAttributes(htmlPage),
-					host.getHostname(), row, status.getActualStatus());
 		}
 
 		return null;

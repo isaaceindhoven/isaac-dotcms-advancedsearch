@@ -1,6 +1,6 @@
 package nl.isaac.dotcms.searcher.osgi;
 
-import com.dotcms.repackage.org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleContext;
 
 import nl.isaac.dotcms.searcher.servlet.SearcherServlet;
 import nl.isaac.dotcms.searcher.viewtool.PortletViewtool;
