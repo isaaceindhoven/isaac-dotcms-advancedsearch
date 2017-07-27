@@ -71,20 +71,20 @@ public class PortletDAO {
 				.collect(Collectors.toList());
 	}
 
-	public List<Contentlet> getWidgetContentlets(Host host, String languageId, Status status) {
-		return getContentletsByStructureType(Structure.STRUCTURE_TYPE_WIDGET, host, languageId, status);
+	public List<Contentlet> getWidgetContentlets(Host host, String languageId, Status status, boolean includeSystemHost) {
+		return getContentletsByStructureType(Structure.STRUCTURE_TYPE_WIDGET, host, languageId, status, includeSystemHost);
 	}
 
-	public List<Contentlet> getContentContentlets(Host host, String languageId, Status status) {
-		return getContentletsByStructureType(Structure.STRUCTURE_TYPE_CONTENT, host, languageId, status);
+	public List<Contentlet> getContentContentlets(Host host, String languageId, Status status, boolean includeSystemHost) {
+		return getContentletsByStructureType(Structure.STRUCTURE_TYPE_CONTENT, host, languageId, status, includeSystemHost);
 	}
 
-	public List<Contentlet> getFileContentlets(Host host, Status status) {
-		return getContentletsByStructureType(Structure.STRUCTURE_TYPE_FILEASSET, host, null, status);
+	public List<Contentlet> getFileContentlets(Host host, Status status, boolean includeSystemHost) {
+		return getContentletsByStructureType(Structure.STRUCTURE_TYPE_FILEASSET, host, null, status, includeSystemHost);
 	}
 
-	public List<Contentlet> getHtmlContentlets(Host host, String languageId, Status status) {
-		return getContentletsByStructureType(Structure.STRUCTURE_TYPE_HTMLPAGE, host, languageId, status);
+	public List<Contentlet> getHtmlContentlets(Host host, String languageId, Status status, boolean includeSystemHost) {
+		return getContentletsByStructureType(Structure.STRUCTURE_TYPE_HTMLPAGE, host, languageId, status, includeSystemHost);
 	}
 
 	public List<HTMLPage> getAllHTMLPages(Host host) {
@@ -116,8 +116,7 @@ public class PortletDAO {
 		return structuresPerType;
 	}
 
-	private List<Contentlet> getContentletsByStructureType(int structureType, Host host, String languageId,
-			Status status) {
+	private List<Contentlet> getContentletsByStructureType(int structureType, Host host, String languageId,	Status status, boolean includeSystemHost) {
 		List<Structure> structuresPerType = getStructuresPerType(structureType);
 
 		if (structuresPerType.size() != 0) {
@@ -131,7 +130,11 @@ public class PortletDAO {
 					cq.addLanguage(languageId);
 				}
 
-				cq.addHostAndIncludeSystemHost(host.getIdentifier());
+				if (includeSystemHost) {
+					cq.addHostAndIncludeSystemHost(host.getIdentifier());
+				} else {
+					cq.addHost(host.getIdentifier());
+				}
 			}
 
 			if (!(status.getStatus().getLive() == false && status.getStatus().getWorking() == false

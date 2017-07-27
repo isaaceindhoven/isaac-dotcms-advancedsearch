@@ -33,6 +33,7 @@ import nl.isaac.dotcms.searcher.util.TextUtil;
 public class SearcherFilter {
 
 	private Host host;
+	private boolean includeSystemHost;
 	private final UserSearchValues userSearchValues;
 	private final TextUtil textUtil;
 	private int filteredPortletHitsSize;
@@ -44,10 +45,15 @@ public class SearcherFilter {
 				userSearchValues.getSnippetSizeBefore(), userSearchValues.getSnippetSizeAfter(),
 				userSearchValues.getExcludeText());
 		this.filteredPortletHitsSize = 0;
+		this.includeSystemHost = !userSearchValues.isFilterSystemHost();
 	}
 
 	public void setHost(Host host) {
 		this.host = host;
+	}
+
+	public boolean isIncludeSystemHost() {
+		return this.includeSystemHost;
 	}
 
 	public Collection<PortletHit> filter(Map<Type, Collection<? extends Object>> portletsToFilter) {

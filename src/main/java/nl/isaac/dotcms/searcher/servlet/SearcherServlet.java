@@ -125,9 +125,11 @@ public class SearcherServlet extends HttpServlet {
 		int maxResults = requestHelper.getParamAsInteger("maxResults", 100);
 		int resultsPerPage = requestHelper.getParamAsInteger("resultsPerPage", 10);
 
+		boolean filterSystemHost = requestHelper.getParamAsBoolean("filterSystemHost", false);
+
 		return new UserSearchValues(searchMode, type, text, hostString, languageId, status, version,
 				Integer.valueOf(snippetSizeBefore), Integer.valueOf(snippetSizeAfter), excludeText, maxResults,
-				resultsPerPage);
+				resultsPerPage, filterSystemHost);
 	}
 
 }

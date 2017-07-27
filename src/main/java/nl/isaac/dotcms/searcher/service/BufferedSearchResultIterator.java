@@ -120,17 +120,17 @@ public class BufferedSearchResultIterator implements Iterator<Map<Type, Collecti
 
 		switch (type) {
 		case CONTENT:
-			Collection<Contentlet> contents = portletDAO.getContentContentlets(host, languageId, status);
+			Collection<Contentlet> contents = portletDAO.getContentContentlets(host, languageId, status, searcherFilter.isIncludeSystemHost());
 			portlets.put(Type.CONTENT, contents);
 			amountFound = contents.size();
 			break;
 		case FILE:
-			Collection<Contentlet> files = portletDAO.getFileContentlets(host, status);
+			Collection<Contentlet> files = portletDAO.getFileContentlets(host, status, searcherFilter.isIncludeSystemHost());
 			portlets.put(Type.FILE, files);
 			amountFound = files.size();
 			break;
 		case WIDGET:
-			Collection<Contentlet> widgets = portletDAO.getWidgetContentlets(host, languageId, status);
+			Collection<Contentlet> widgets = portletDAO.getWidgetContentlets(host, languageId, status, searcherFilter.isIncludeSystemHost());
 			portlets.put(Type.WIDGET, widgets);
 			amountFound = widgets.size();
 			break;
@@ -153,7 +153,7 @@ public class BufferedSearchResultIterator implements Iterator<Map<Type, Collecti
 			// Use the new HTML Contentlets
 			if (DotCMSVersionUtil.dotCMSVersion >= 3) {
 				Logger.info(this, "Searching HTML contentlets (dotCMS 3 or higher)");
-				List<Contentlet> htmlContentlets = portletDAO.getHtmlContentlets(host, languageId, status);
+				List<Contentlet> htmlContentlets = portletDAO.getHtmlContentlets(host, languageId, status, searcherFilter.isIncludeSystemHost());
 				portlets.put(Type.HTML_CONTENTLET, htmlContentlets);
 				amountFound = htmlContentlets.size();
 			}

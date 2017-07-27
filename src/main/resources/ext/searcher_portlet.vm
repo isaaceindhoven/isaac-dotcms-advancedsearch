@@ -84,6 +84,7 @@
 	#set($resultSize = $searchFilteredResults.size())
 	#set($maxResults = $request.getSession().getAttribute('searcher_maxResults'))
 	#set($resultsPerPage = $request.getSession().getAttribute('searcher_resultsPerPage'))
+	#set($filterSystemHost = $request.getSession().getAttribute('searcher_filterSystemHost'))
 #else
 	#set($status = "all")
 	#set($language_id = 1)
@@ -105,7 +106,7 @@
 	#if ($UtilMethods.isSet($request.getParameter('page')))
 		#set($page = $webapi.parseInt($request.getParameter('page')))
 	#end
-	
+
 	#set($paginatedResults = $!portletviewtool.paginateResultsAndGetSnippets($page, $request))
 #end
 
@@ -133,7 +134,7 @@
 						</dd>
 					</dl>
 					<div class="clear"></div>
-					
+
 					<!-- Hosts dropdown -->
 					<dl>
 						<dt>
@@ -149,7 +150,7 @@
 						</dd>
 					</dl>
 					<div class="clear"></div>
-					
+
 					<!--Keyword textfield-->
 					<dl>
 						<dt>
@@ -162,7 +163,7 @@
 						</dd>
 					</dl>
 					<div class="clear"></div>
-					
+
 					<!--Search Mode radio-->
 					<dl>
 						<dt>
@@ -182,7 +183,7 @@
 						</dd>
 					</dl>
 					<div class="clear"></div>
-					
+
 					<!-- Type dropdown-->
 					<dl>
 						<dt>
@@ -198,7 +199,7 @@
 						</dd>
 					</dl>
 					<div class="clear"></div>
-					
+
 					<!--Status radio-->
 					<dl>
 						<dt>
@@ -226,7 +227,7 @@
 						</dd>
 					</dl>
 					<div class="clear"></div>
-					
+
 					<!--Version radio-->
 					<dl>
 						<dt>
@@ -270,7 +271,7 @@
 								<input type="number" dojoType="dijit.form.NumberTextBox" required="true" name="snippetSizeAfter" value="$!{snippetSizeAfter}"/>
 							</dd>
 						</dl>
-						
+
 						<!-- Exclude -->
 						<dl>
 							<dt>
@@ -283,7 +284,7 @@
 							</dd>
 						</dl>
 						<div class="clear"></div>
-						
+
 						<!-- Max results -->
 						<dl>
 							<dt>
@@ -296,7 +297,7 @@
 							</dd>
 						</dl>
 						<div class="clear"></div>
-						
+
 						<!-- Results per page -->
 						<dl>
 							<dt>
@@ -306,6 +307,16 @@
 							</dt>
 							<dd>
 								<input type="number" dojoType="dijit.form.NumberTextBox" required="true" name="resultsPerPage" value="$!resultsPerPage"/>
+							</dd>
+						</dl>
+						<div class="clear"></div>
+
+						<!-- Hide System Host -->
+						<dl>
+							<dt></dt>
+							<dd>
+								<input type="checkbox" dojoType="dijit.form.CheckBox" name="filterSystemHost" value="true" #if($filterSystemHost == "true")checked#end>
+								Hide System Host
 							</dd>
 						</dl>
 						<div class="clear"></div>
@@ -329,7 +340,7 @@
 
 				<div id="measureTheHeightOfSearchTools" class="clear"></div>
 			</div>
-			
+
 			<!-- START Right Column -->
 			<div dojoType="dijit.layout.ContentPane" splitter="true" region="center" id="contentWrapper" style="overflow-y:auto; overflow-x:auto;margin:35px 0 0 0;">
 
@@ -339,7 +350,7 @@
 				<div id="metaMatchingResultsDiv" style="display:none;padding-top:7px;">
 					<!-- START Listing Results -->
 					<div id="matchingResultsDiv" style="display: none"></div>
-					
+
 					<table id="results_table" class="listingTable">
 
 						<tr>
@@ -351,9 +362,9 @@
 							<th>Host</th>
 							<th>Snippet</th>
 						</tr>
-						
+
 						#foreach ($searchResult in $paginatedResults)
-							
+
 							#if($searchResult.type == "CONTENT" || $searchResult.type == "WIDGET" || $searchResult.type == "FILE" || $searchResult.type == "HTML_CONTENTLET")
 								#set($languageObject = $languagewebapi.getLanguage("${searchResult.item.languageId}"))
 								#set($imageFlagURL = "/html/images/languages/"+ $languageObject.getLanguageCode() +"_"+ $languageObject.getCountryCode()+".gif")
@@ -362,7 +373,7 @@
 								#set($imageFlagURL = "/html/images/languages/all.gif")
 								#set($imageFlagTitle = "")
 							#end
-							
+
 							#if($searchResult.type == "CONTAINER")
 								#set($type = "Container")
 								#set($inode = "javascript: editContainer('$!{searchResult.item.inode}','$!{currentURL}')")
@@ -374,13 +385,13 @@
 							#elseif($searchResult.type == "WIDGET")
 								#set($type = $!{searchResult.item.structureName})
 								#set($inode = "javascript: editContentlet('$!{searchResult.item.inode}','$!{currentURL}')")
-								
+
 								#if($UtilMethods.isSet($searchResult.item.widgetTitle))
 									#set($title = $!{searchResult.item.widgetTitle})
 								#else
 									#set($title = $!{searchResult.title})
 								#end
-								
+
 								#set($inodeTitle = '<span class="gearIcon" title="widget"></span> ' + $!{title})
 							#elseif($searchResult.type == "FILE")
 								#set($type = "File")
@@ -426,49 +437,49 @@
 										<span class="liveIcon"></span>
 									#end
 								</td>
-								
+
 								<!-- Language Image -->
 								<td align="center"><img width="16px" height="11px" src="$!{imageFlagURL}" class="country-flag" title="$!{imageFlagTitle}"></td>
-								
+
 								<!-- Title + URL -->
 								<td><a href="$!{inode}">$!{inodeTitle}</a></td>
-								
+
 								<!-- Type -->
 								<td>$!{type}</td>
-								
+
 								<!-- Field -->
 								<td>$!{searchResult.fieldName}</td>
-								
+
 								<!-- Host -->
 								<td class="nowrap"><span class="hostIcon"></span> $!{searchResult.hostName}</td>
-								
+
 								<!-- Snippet -->
 								<td>
 									#foreach($snippet in $searchResult.snippets)
 										#set( $htmlEncodedString = $webapi.htmlEncode($!snippet.toLowerCase()) )
-									
+
 										#if($searchMode == "TEXT")
 											#set( $htmlEncodedTextParam = $webapi.htmlEncode($!textParam.toLowerCase()) )
 										#else
 											#set( $htmlEncodedTextParam = $webapi.htmlEncode($!textParam) )
 										#end
-									
+
 									<div class="snippet">
 										$!portletviewtool.replaceHTMLEncodedTextWithMatchHighlight($htmlEncodedString, $htmlEncodedTextParam, $searchMode)
 									</div>
 									#end
 								</td>
 							</tr>
-							
+
 						#end
 					</table>
-					
+
 					<div id="results_table_popup_menus"></div>
 					<div class="clear"></div>
 					<!-- END Listing Results -->
 				</div>
 				#end
-				
+
 				#if($UtilMethods.isSet($pagination))
 				<!-- Start Pagination -->
 				<div class="yui-gb buttonRow">
@@ -646,7 +657,7 @@
 		var x ='/c/portal/layout?p_l_id=56fedb43-dbbf-4ce2-8b77-41fb73bad015&p_p_id=EXT_STRUCTURE&p_p_action=1&p_p_state=maximized&p_p_mode=view&_EXT_STRUCTURE_struts_action=%2Fext%2Fstructure%2Fedit_structure' + "&inode=" + inode;
 		window.location=x;
 	}
-	
+
 	function editFolder(objId, referer) {
 		var loc = '';
 		loc += '/c/portal/layout?p_l_id=b7ab5d3c-5ee0-4195-a17e-8f5579d718dd&p_p_id=EXT_BROWSER&p_p_action=1&p_p_state=maximized&p_p_mode=view&_EXT_BROWSER_struts_action=%2Fext%2Ffolders%2Fedit_folder&inode=' + objId + '&referer=' + encodeURIComponent(referer);
@@ -671,7 +682,7 @@
 	function resizeAdvancedSearch(){
 		var start = dojo.getStyle(dojo.byId('advancedSearchOptions'),'height');
 		// how tall should we be
-		var end=(dojo.position(dojo.byId("measureTheHeightOfSearchTools")).y + 175) - dojo.position(dojo.byId("advancedSearchOptions")).y;
+		var end=(dojo.position(dojo.byId("measureTheHeightOfSearchTools")).y + 203) - dojo.position(dojo.byId("advancedSearchOptions")).y;
 
 		// resize
 
@@ -713,9 +724,9 @@
 	}
 
 	#if($UtilMethods.isSet($pagination))
-	
+
 		#set( $redirectUrl = $currentURL.replaceAll("&page=[^&]+", ""))
-		
+
 		showPagination($!{pagination.currentPage}, $!{pagination.total}, $!{pagination.begin}, $!{pagination.end}, $!{pagination.totalPages}, $!{pagination.hasNext}, $!{pagination.hasPrevious});
 
 		function showPagination (currentPage,num,begin,end,totalPages,hasNext,hasPrevious) {
@@ -730,7 +741,7 @@
 			strbuff+= "</div></div>";
 			div.innerHTML = strbuff;
 			div.style.display = "";
-			
+
 			//Bottom Matching Results
 			var div = document.getElementById("matchingResultsBottomDiv")
 			var strbuff = "<table border='0' width=\"100%\"><tr><td align='center' nowrap='true'><b>showing " + begin + " - " + end + " of " + num;
@@ -758,7 +769,7 @@
 
 			strbuff += "</b></td></tr></table>";
 			div.innerHTML = strbuff;
-			
+
 			if (hasNext) {
 				document.getElementById("nextDiv").style.display = "";
 			} else {
@@ -771,11 +782,11 @@
 				document.getElementById("previousDiv").style.display = "none";
 			}
 		}
-		
+
 		function nextPage(currentPage) {
 			window.location.href = "$!{redirectUrl}&page=" + (currentPage + 1);
 		}
-		
+
 		function previousPage(currentPage) {
 			window.location.href = "$!{redirectUrl}&page=" + (currentPage - 1);
 		}

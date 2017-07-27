@@ -20,10 +20,11 @@ public class UserSearchValues {
 	private final String excludeText;
 	private final Integer maxResults;
 	private final int resultsPerPage;
+	private final boolean filterSystemHost;
 
 	public UserSearchValues(SearchMode searchMode, Type type, String searchString, String host, String languageId,
 			Status status, Version version, int snippetSizeBefore, int snippetSizeAfter, String excludeText,
-			Integer maxResults, int resultsPerPage) {
+			Integer maxResults, int resultsPerPage, boolean filterSystemHost) {
 		super();
 		this.searchMode = searchMode;
 		this.type = type;
@@ -37,6 +38,7 @@ public class UserSearchValues {
 		this.excludeText = excludeText;
 		this.maxResults = maxResults;
 		this.resultsPerPage = resultsPerPage;
+		this.filterSystemHost = filterSystemHost;
 	}
 
 	public String getSearchString() {
@@ -83,6 +85,10 @@ public class UserSearchValues {
 		return resultsPerPage;
 	}
 
+	public boolean isFilterSystemHost() {
+		return filterSystemHost;
+	}
+
 	public Integer getMaxResults() {
 		return maxResults == 0 ? null : maxResults;
 	}
@@ -106,6 +112,7 @@ public class UserSearchValues {
 		attributes.put("searcher_excludeText", this.excludeText);
 		attributes.put("searcher_maxResults", this.maxResults);
 		attributes.put("searcher_resultsPerPage", this.resultsPerPage);
+		attributes.put("searcher_filterSystemHost", this.filterSystemHost);
 		return attributes;
 	}
 
@@ -124,6 +131,7 @@ public class UserSearchValues {
 		attributes.add("searcher_excludeText");
 		attributes.add("searcher_maxResults");
 		attributes.add("searcher_resultsPerPage");
+		attributes.add("searcher_filterSystemHost");
 		return attributes;
 	}
 
@@ -133,6 +141,7 @@ public class UserSearchValues {
 				+ ", host=" + host + ", languageId=" + languageId + ", status=" + status + ", version=" + version
 				+ ", snippetSizeBefore=" + snippetSizeBefore + ", snippetSizeAfter=" + snippetSizeAfter
 				+ ", excludeText=" + excludeText + ", maxResults=" + maxResults + ", resultsPerPage=" + resultsPerPage
+				+ ", filterSystemHost=" + filterSystemHost
 				+ "]";
 	}
 
