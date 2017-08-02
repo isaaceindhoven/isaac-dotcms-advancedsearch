@@ -9,8 +9,7 @@ public class StatusFactory {
 	public enum Types {
 		CONTENT { public StatusInterface create() { return new ContentletStatus(); } },
 		CONTAINER { public StatusInterface create() { return new ContainerStatus(); } },
-		TEMPLATE { public StatusInterface create() { return new TemplateStatus(); } },
-		HTMLPAGE { public StatusInterface create() { return new HTMLPageStatus(); } };
+		TEMPLATE { public StatusInterface create() { return new TemplateStatus(); } };
 		public abstract StatusInterface create();
 	}
 	

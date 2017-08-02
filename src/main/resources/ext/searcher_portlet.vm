@@ -1,14 +1,16 @@
 <style>
-	.buttonBoxLeft {
-		top: 108px;
-		font-weight: bold;
-	}
-	#filterWrapper {
-		width: 350px;
-		overflow-y: auto;
-		overflow-x: hidden;
-		margin: 43px 0 0 5px;
-	}
+    #submitSearcherForm,
+    #borderContainer,
+    #filterWrapper {
+        height: 100% !important;
+    }
+    #filterWrapper {
+        width: 250px;
+        z-index: 10;
+    }
+    #contentWrapper {
+        margin-left: 5px !important;
+    }
 	#language_id_popup span {
 		width: 16px;
 		height: 11px;
@@ -31,6 +33,9 @@
 	}
 	table.listingTable td .country-flag {
 		margin-top: 4px;
+	}
+	.dijitComboBox {
+	    width: 100% !important;
 	}
 	.snippet {
 		padding: 2px 4px;
@@ -111,234 +116,223 @@
 #end
 
 <div class="portlet-wrapper" >
-	<div class="buttonBoxLeft">
-		Advanced search
-	</div>
 	<form method="POST" action="/app/servlets/SearcherServlet" id="submitSearcherForm">
 		<input type="hidden" name="redirectPage" value="/c/portal/layout?$request.getQueryString()" />
 		<!-- START Split Screen -->
-		<div dojoType="dijit.layout.BorderContainer" design="sidebar" gutters="false" liveSplitters="true" id="borderContainer" class="shadowBox headerBox">
+		<div dojoType="dijit.layout.BorderContainer" design="sidebar" gutters="false" liveSplitters="true" id="borderContainer">
 			<!-- START Left Column -->
-			<div dojoType="dijit.layout.ContentPane" id="filterWrapper" splitter="false" region="leading" class="lineRight" >
-				<!-- START Advanced Search-->
-				<div id="advancedSearch">
-					<!-- Language dropdown-->
-					<dl>
-						<dt>
-							Language:
-						</dt>
-						<dd>
-							<div id="combo_language">
-								<input id="language_id"/>
-							</div>
-						</dd>
-					</dl>
-					<div class="clear"></div>
+			<div dojoType="dijit.layout.ContentPane" id="filterWrapper" splitter="false" region="leading" class="portlet-sidebar-wrapper" >
+			    <div class="portlet-sidebar">
+                    <!-- START Advanced Search-->
+                    <div id="advancedSearch">
+                        <!-- Language dropdown-->
+                        <dl class="vertical">
+                            <dt>
+                                <label>Language:</label>
+                            </dt>
+                            <dd>
+                                <div id="combo_language">
+                                    <input id="language_id"/>
+                                </div>
+                            </dd>
+                        </dl>
+                        <div class="clear"></div>
 
-					<!-- Hosts dropdown -->
-					<dl>
-						<dt>
-							Host:
-						</dt>
-						<dd>
-							<select dojoType="dijit.form.FilteringSelect" name="hostName">
-								<option value="all_hosts" #if($hostParam == "all_hosts")selected="selected"#end>All Hosts</option>
-								#foreach($hostName in $allHosts)
-									<option value="$hostName" #if($hostName.equals($hostParam))selected="selected"#end>$hostName</option>
-								#end
-							</select>
-						</dd>
-					</dl>
-					<div class="clear"></div>
+                        <!-- Hosts dropdown -->
+                        <dl class="vertical">
+                            <dt>
+                                <label>Host:</label>
+                            </dt>
+                            <dd>
+                                <select dojoType="dijit.form.FilteringSelect" name="hostName">
+                                    <option value="all_hosts" #if($hostParam == "all_hosts")selected="selected"#end>All Hosts</option>
+                                    #foreach($hostName in $allHosts)
+                                        <option value="$hostName" #if($hostName.equals($hostParam))selected="selected"#end>$hostName</option>
+                                    #end
+                                </select>
+                            </dd>
+                        </dl>
+                        <div class="clear"></div>
 
-					<!--Keyword textfield-->
-					<dl>
-						<dt>
-							<a href="#" id="tip-keyword"><span class="hintIcon"></span></a>
-							<span dojoType="dijit.Tooltip" connectId="tip-keyword" position="above" style="width:100px;"> <span class="contentHint">Please enter your search in the keyword field.</span> </span>
-							Keyword:
-						</dt>
-						<dd>
-							<input type="text" dojoType="dijit.form.TextBox" required="true" name="text" value="$!textParam"/>
-						</dd>
-					</dl>
-					<div class="clear"></div>
+                        <!--Keyword textfield-->
+                        <dl class="vertical">
+                            <dt>
+                                <label>Keyword: <a href="#" id="tip-keyword"><span class="hintIcon"></span></a></label>
+                                <span dojoType="dijit.Tooltip" connectId="tip-keyword" position="above" style="width:100px;"> <span class="contentHint">Please enter your search in the keyword field.</span> </span>
+                            </dt>
+                            <dd>
+                                <input type="text" dojoType="dijit.form.TextBox" required="true" name="text" value="$!textParam"/>
+                            </dd>
+                        </dl>
+                        <div class="clear"></div>
 
-					<!--Search Mode radio-->
-					<dl>
-						<dt>
-							<a href="#" id="tip-search-mode"><span class="hintIcon"></span></a>
-							<span dojoType="dijit.Tooltip" connectId="tip-search-mode" position="above" style="width:100px;"> <span class="contentHint">Please select the search mode of the items: <ul><li>Text: This is the standard and will search items by text.</li><li>Regex: This will search items by regular expression.</li></ul></span> </span>
-							Search Mode:
-						</dt>
-						<dd class="radioList">
-							<div>
-								<input type="radio" #if($searchMode == "TEXT") checked="checked" #end dojoType="dijit.form.RadioButton" name="searchMode" id="search-mode-text" value="TEXT">
-								&nbsp;<label for="search-mode-text">Text</label>
-							</div>
-							<div>
-								<input type="radio" #if($searchMode == "REGEX") checked="checked" #end dojoType="dijit.form.RadioButton" name="searchMode" id="search-mode-regex" value="REGEX">
-								&nbsp;<label for="search-mode-regex">Regex</label>
-							</div>
-						</dd>
-					</dl>
-					<div class="clear"></div>
+                        <!--Search Mode radio-->
+                        <dl class="vertical">
+                            <dt>
+                                <label>Search Mode: <a href="#" id="tip-search-mode"><span class="hintIcon"></span></a></label>
+                                <span dojoType="dijit.Tooltip" connectId="tip-search-mode" position="above" style="width:100px;"> <span class="contentHint">Please select the search mode of the items: <ul><li>Text: This is the standard and will search items by text.</li><li>Regex: This will search items by regular expression.</li></ul></span> </span>
+                            </dt>
+                            <dd class="radioList">
+                                <div>
+                                    <input type="radio" #if($searchMode == "TEXT") checked="checked" #end dojoType="dijit.form.RadioButton" name="searchMode" id="search-mode-text" value="TEXT">
+                                    &nbsp;<label for="search-mode-text">Text</label>
+                                </div>
+                                <div>
+                                    <input type="radio" #if($searchMode == "REGEX") checked="checked" #end dojoType="dijit.form.RadioButton" name="searchMode" id="search-mode-regex" value="REGEX">
+                                    &nbsp;<label for="search-mode-regex">Regex</label>
+                                </div>
+                            </dd>
+                        </dl>
+                        <div class="clear"></div>
 
-					<!-- Type dropdown-->
-					<dl>
-						<dt>
-							<a href="#" id="tip-type"><span class="hintIcon"></span></a>
-							<span dojoType="dijit.Tooltip" connectId="tip-type" position="above" style="width:100px;"> <span class="contentHint">Please select the type where the search engine will search for. <br />If you select 'All', the search engine will search for all the types in the list.</span> </span>
-							Type:
-						</dt>
-						<dd>
-							<div id="combo_type">
-								<input id="type_id" />
-							</div>
-							<input type="hidden" name="type_id" value="all">
-						</dd>
-					</dl>
-					<div class="clear"></div>
+                        <!-- Type dropdown-->
+                        <dl class="vertical">
+                            <dt>
+                                <label>Type: <a href="#" id="tip-type"><span class="hintIcon"></span></a></label>
+                                <span dojoType="dijit.Tooltip" connectId="tip-type" position="above" style="width:100px;"> <span class="contentHint">Please select the type where the search engine will search for. <br />If you select 'All', the search engine will search for all the types in the list.</span> </span>
+                            </dt>
+                            <dd>
+                                <div id="combo_type">
+                                    <input id="type_id" />
+                                </div>
+                                <input type="hidden" name="type_id" value="all">
+                            </dd>
+                        </dl>
+                        <div class="clear"></div>
 
-					<!--Status radio-->
-					<dl>
-						<dt>
-							<a href="#" id="tip-status"><span class="hintIcon"></span></a>
-							<span dojoType="dijit.Tooltip" connectId="tip-status" position="above" style="width:100px;"> <span class="contentHint">Please select the status of the items: <ul><li>All: The search engine will search for the Published, Unpublished and Archived status</li><li>Published: The search engine will only search for Published items</li><li>Unpublished: The search engine will only search for Unpublished items</li><li>Archived: The search engine will only search for Archived items</li></ul></span> </span>
-							Status:
-						</dt>
-						<dd class="radioList">
-							<div>
-								<input type="radio" #if($status == "all") checked="checked" #end dojoType="dijit.form.RadioButton" name="status" id="status-all" value="all">
-								&nbsp;<label for="status-all">All</label>
-							</div>
-							<div>
-								<input type="radio" #if($status == "published") checked="checked" #end dojoType="dijit.form.RadioButton" name="status" id="status-published" value="published">
-								&nbsp;<label for="status-published">Published</label>
-							</div>
-							<div>
-								<input type="radio" #if($status == "unpublished") checked="checked" #end dojoType="dijit.form.RadioButton" name="status" id="status-unpublished" value="unpublished">
-								&nbsp;<label for="status-unpublished">Unpublished</label>
-							</div>
-							<div>
-								<input type="radio" #if($status == "archived") checked="checked" #end dojoType="dijit.form.RadioButton" name="status" id="status-archived" value="archived">
-								&nbsp;<label for="status-archived">Archived</label>
-							</div>
-						</dd>
-					</dl>
-					<div class="clear"></div>
+                        <!--Status radio-->
+                        <dl class="vertical">
+                            <dt>
+                                <label>Status: <a href="#" id="tip-status"><span class="hintIcon"></span></a></label>
+                                <span dojoType="dijit.Tooltip" connectId="tip-status" position="above" style="width:100px;"> <span class="contentHint">Please select the status of the items: <ul><li>All: The search engine will search for the Published, Unpublished and Archived status</li><li>Published: The search engine will only search for Published items</li><li>Unpublished: The search engine will only search for Unpublished items</li><li>Archived: The search engine will only search for Archived items</li></ul></span> </span>
+                            </dt>
+                            <dd class="radioList">
+                                <div>
+                                    <input type="radio" #if($status == "all") checked="checked" #end dojoType="dijit.form.RadioButton" name="status" id="status-all" value="all">
+                                    &nbsp;<label for="status-all">All</label>
+                                </div>
+                                <div>
+                                    <input type="radio" #if($status == "published") checked="checked" #end dojoType="dijit.form.RadioButton" name="status" id="status-published" value="published">
+                                    &nbsp;<label for="status-published">Published</label>
+                                </div>
+                                <div>
+                                    <input type="radio" #if($status == "unpublished") checked="checked" #end dojoType="dijit.form.RadioButton" name="status" id="status-unpublished" value="unpublished">
+                                    &nbsp;<label for="status-unpublished">Unpublished</label>
+                                </div>
+                                <div>
+                                    <input type="radio" #if($status == "archived") checked="checked" #end dojoType="dijit.form.RadioButton" name="status" id="status-archived" value="archived">
+                                    &nbsp;<label for="status-archived">Archived</label>
+                                </div>
+                            </dd>
+                        </dl>
+                        <div class="clear"></div>
 
-					<!--Version radio-->
-					<dl>
-						<dt>
-							<a href="#" id="tip-version"><span class="hintIcon"></span></a>
-							<span dojoType="dijit.Tooltip" connectId="tip-version" position="above" style="width:100px;"> <span class="contentHint">Please select the version of the items: <ul><li>Working version: This is the standard, when you click on the item in the search results you will go to the live version of that item.</li><li>Live version: The live version is the version you see actually on your website. If the live version isn't available, then the working version will be used</li></ul></span> </span>
-							Version:
-						</dt>
-						<dd class="radioList">
-							<div>
-								<input type="radio" #if($version == "WORKING") checked="checked" #end dojoType="dijit.form.RadioButton" name="version" id="version-working" value="WORKING">
-								&nbsp;<label for="version-working">Working version</label>
-							</div>
-							<div>
-								<input type="radio" #if($version == "LIVE") checked="checked" #end dojoType="dijit.form.RadioButton" name="version" id="version-live" value="LIVE">
-								&nbsp;<label for="version-live">Live version</label>
-							</div>
-						</dd>
-					</dl>
-					<div id="advancedSearchOptions" style="height:0px;overflow: hidden">
-						<div class="clear"></div>
+                        <!--Version radio-->
+                        <dl class="vertical">
+                            <dt>
+                                <label>Version: <a href="#" id="tip-version"><span class="hintIcon"></span></a></label>
+                                <span dojoType="dijit.Tooltip" connectId="tip-version" position="above" style="width:100px;"> <span class="contentHint">Please select the version of the items: <ul><li>Working version: This is the standard, when you click on the item in the search results you will go to the live version of that item.</li><li>Live version: The live version is the version you see actually on your website. If the live version isn't available, then the working version will be used</li></ul></span> </span>
+                            </dt>
+                            <dd class="radioList">
+                                <div>
+                                    <input type="radio" #if($version == "WORKING") checked="checked" #end dojoType="dijit.form.RadioButton" name="version" id="version-working" value="WORKING">
+                                    &nbsp;<label for="version-working">Working version</label>
+                                </div>
+                                <div>
+                                    <input type="radio" #if($version == "LIVE") checked="checked" #end dojoType="dijit.form.RadioButton" name="version" id="version-live" value="LIVE">
+                                    &nbsp;<label for="version-live">Live version</label>
+                                </div>
+                            </dd>
+                        </dl>
+                        <div id="advancedSearchOptions" style="height:0px;overflow: hidden">
+                            <div class="clear"></div>
 
-						<!-- Snippet size -->
-						<dl>
-							<dt>
-								<a href="#" id="tip-snippetSizeBefore"><span class="hintIcon"></span></a>
-								<span dojoType="dijit.Tooltip" connectId="tip-snippetSizeBefore" position="above" style="width:100px;"> <span class="contentHint">Amount of characters shown in the snippet before the keyword</span> </span>
-								Snippet size before keyword:
-							</dt>
-							<dd>
-								<input type="number" dojoType="dijit.form.NumberTextBox" required="true" name="snippetSizeBefore" value="$!{snippetSizeBefore}"/>
-							</dd>
-						</dl>
-						<div class="clear"></div>
-						<dl>
-							<dt>
-								<a href="#" id="tip-snippetSizeAfter"><span class="hintIcon"></span></a>
-								<span dojoType="dijit.Tooltip" connectId="tip-snippetSizeAfter" position="above" style="width:100px;"> <span class="contentHint">Amount of characters shown in the snippet after the keyword</span> </span>
-								Snippet size after keyword:
-							</dt>
-							<dd>
-								<input type="number" dojoType="dijit.form.NumberTextBox" required="true" name="snippetSizeAfter" value="$!{snippetSizeAfter}"/>
-							</dd>
-						</dl>
+                            <!-- Snippet size -->
+                            <dl class="vertical">
+                                <dt>
+                                    <label>Snippet size before keyword: <a href="#" id="tip-snippetSizeBefore"><span class="hintIcon"></span></a></label>
+                                    <span dojoType="dijit.Tooltip" connectId="tip-snippetSizeBefore" position="above" style="width:100px;"> <span class="contentHint">Amount of characters shown in the snippet before the keyword</span> </span>
+                                </dt>
+                                <dd>
+                                    <input type="number" dojoType="dijit.form.NumberTextBox" required="true" name="snippetSizeBefore" value="$!{snippetSizeBefore}"/>
+                                </dd>
+                            </dl>
+                            <div class="clear"></div>
+                            <dl class="vertical">
+                                <dt>
+                                    <label>Snippet size after keyword: <a href="#" id="tip-snippetSizeAfter"><span class="hintIcon"></span></a></label>
+                                    <span dojoType="dijit.Tooltip" connectId="tip-snippetSizeAfter" position="above" style="width:100px;"> <span class="contentHint">Amount of characters shown in the snippet after the keyword</span> </span>
+                                </dt>
+                                <dd>
+                                    <input type="number" dojoType="dijit.form.NumberTextBox" required="true" name="snippetSizeAfter" value="$!{snippetSizeAfter}"/>
+                                </dd>
+                            </dl>
 
-						<!-- Exclude -->
-						<dl>
-							<dt>
-								<a href="#" id="tip-exclude"><span class="hintIcon"></span></a>
-								<span dojoType="dijit.Tooltip" connectId="tip-exclude" position="above" style="width:100px;"> <span class="contentHint">This text is excluded from the search</span> </span>
-								Exclude:
-							</dt>
-							<dd>
-								<input type="text" dojoType="dijit.form.TextBox" name="excludeText" value="$!excludeText"/>
-							</dd>
-						</dl>
-						<div class="clear"></div>
+                            <!-- Exclude -->
+                            <dl class="vertical">
+                                <dt>
+                                    <label>Exclude: <a href="#" id="tip-exclude"><span class="hintIcon"></span></a></label>
+                                    <span dojoType="dijit.Tooltip" connectId="tip-exclude" position="above" style="width:100px;"> <span class="contentHint">This text is excluded from the search</span> </span>
+                                </dt>
+                                <dd>
+                                    <input type="text" dojoType="dijit.form.TextBox" name="excludeText" value="$!excludeText"/>
+                                </dd>
+                            </dl>
+                            <div class="clear"></div>
 
-						<!-- Max results -->
-						<dl>
-							<dt>
-								<a href="#" id="tip-maxResults"><span class="hintIcon"></span></a>
-								<span dojoType="dijit.Tooltip" connectId="tip-maxResults" position="above" style="width:100px;"> <span class="contentHint">Max amount of results to search for. <ul><li>0: search everything</li></ul></span> </span>
-								Max results size:
-							</dt>
-							<dd>
-								<input type="number" dojoType="dijit.form.NumberTextBox" required="true" name="maxResults" value="$!maxResults"/>
-							</dd>
-						</dl>
-						<div class="clear"></div>
+                            <!-- Max results -->
+                            <dl class="vertical">
+                                <dt>
+                                    <label>Max results size: <a href="#" id="tip-maxResults"><span class="hintIcon"></span></a></label>
+                                    <span dojoType="dijit.Tooltip" connectId="tip-maxResults" position="above" style="width:100px;"> <span class="contentHint">Max amount of results to search for. <ul><li>0: search everything</li></ul></span> </span>
+                                </dt>
+                                <dd>
+                                    <input type="number" dojoType="dijit.form.NumberTextBox" required="true" name="maxResults" value="$!maxResults"/>
+                                </dd>
+                            </dl>
+                            <div class="clear"></div>
 
-						<!-- Results per page -->
-						<dl>
-							<dt>
-								<a href="#" id="tip-resultsPerPage"><span class="hintIcon"></span></a>
-								<span dojoType="dijit.Tooltip" connectId="tip-resultsPerPage" position="above" style="width:100px;"> <span class="contentHint">Max amount of results per page.</span> </span>
-								Results size per page:
-							</dt>
-							<dd>
-								<input type="number" dojoType="dijit.form.NumberTextBox" required="true" name="resultsPerPage" value="$!resultsPerPage"/>
-							</dd>
-						</dl>
-						<div class="clear"></div>
+                            <!-- Results per page -->
+                            <dl class="vertical">
+                                <dt>
+                                    <label>Results size per page: <a href="#" id="tip-resultsPerPage"><span class="hintIcon"></span></a></label>
+                                    <span dojoType="dijit.Tooltip" connectId="tip-resultsPerPage" position="above" style="width:100px;"> <span class="contentHint">Max amount of results per page.</span> </span>
+                                </dt>
+                                <dd>
+                                    <input type="number" dojoType="dijit.form.NumberTextBox" required="true" name="resultsPerPage" value="$!resultsPerPage"/>
+                                </dd>
+                            </dl>
+                            <div class="clear"></div>
 
-						<!-- Hide System Host -->
-						<dl>
-							<dt></dt>
-							<dd>
-								<input type="checkbox" dojoType="dijit.form.CheckBox" name="filterSystemHost" value="true" #if($filterSystemHost == "true")checked#end>
-								Hide System Host
-							</dd>
-						</dl>
-						<div class="clear"></div>
-					</div>
+							<!-- Hide System Host -->
+							<dl class="vertical">
+								<dt></dt>
+								<dd>
+									<input type="checkbox" dojoType="dijit.form.CheckBox" name="filterSystemHost" value="true" #if($filterSystemHost == "true")checked#end>
+									Hide System Host
+								</dd>
+							</dl>
+							<div class="clear"></div> 
+
+                            <div id="measureTheHeightOfSearchTools" class="clear"></div>
+                        </div>
+                    </div>
+
+                    <!--Buttons-->
+                    <div class="buttonRow">
+                        <button dojoType="dijit.form.Button" id="searchButton" type="submit" iconClass="searchIcon">
+                            Search
+                        </button>
+                        <button dojoType="dijit.form.Button" onClick="clearSearch();" id="clearButton" iconClass="resetIcon">
+                            Clear Search
+                        </button>
+                    </div>
+                    <a href="javascript:toggleAdvancedSearchDiv()" class="advanced-search-button">
+                        <div id="toggleDivText">
+                            Advanced
+                        </div>
+                    </a>
 				</div>
-
-				<!--Buttons-->
-				<div class="buttonRow">
-					<button dojoType="dijit.form.Button" id="searchButton" type="submit" iconClass="searchIcon">
-						Search
-					</button>
-					<button dojoType="dijit.form.Button" onClick="clearSearch();" id="clearButton" iconClass="resetIcon">
-						Clear Search
-					</button>
-				</div>
-				<a href="javascript:toggleAdvancedSearchDiv()" style="display:block;background:#f1f1f1;border-top:1px solid #ddd;padding:8px 10px;text-align:center;text-decoration:none;">
-					<div id="toggleDivText">
-						Advanced
-					</div>
-				</a>
-
-				<div id="measureTheHeightOfSearchTools" class="clear"></div>
 			</div>
 
 			<!-- START Right Column -->
@@ -349,7 +343,7 @@
 				#else
 				<div id="metaMatchingResultsDiv" style="display:none;padding-top:7px;">
 					<!-- START Listing Results -->
-					<div id="matchingResultsDiv" style="display: none"></div>
+					<div id="matchingResultsDiv" class="portlet-toolbar__info" style="display: none"></div>
 
 					<table id="results_table" class="listingTable">
 
@@ -513,6 +507,8 @@
 </div>
 
 <script type="text/javascript">
+	var inFrame=true;
+
 	//refresh the page and make sure post data is removed
 	function clearSearch() {
 		var redirectPage = '/c/portal/layout?$request.getQueryString()';
@@ -627,41 +623,66 @@
 	function editFile (parentId, objId, userId, referer, live, working, write) {
 		var loc = '';
 		if (isInodeSet(parentId)) {
-			loc += '/c/portal/layout?p_l_id=71b8a1ca-37b6-4b6e-a43b-c7482f28db6c&p_p_id=EXT_11&p_p_action=1&p_p_state=maximized&p_p_mode=view&_EXT_11_struts_action=%2Fext%2Ffiles%2Fedit_file&_EXT_11_cmd=edit&parent=' + parentId + "&inode=" + objId + '&userId=' + userId + '&referer=' + encodeURIComponent(referer);
+			loc += '/c/portal/layout?p_l_id=71b8a1ca-37b6-4b6e-a43b-c7482f28db6c&p_p_id=content&p_p_action=1&p_p_state=maximized&p_p_mode=view&_content_struts_action=%2Fext%2Ffiles%2Fedit_file&_content_cmd=edit&parent=' + parentId + "&inode=" + objId + '&userId=' + userId + '&referer=' + encodeURIComponent(referer);
 		}
 		else {
-			loc += '/c/portal/layout?p_l_id=71b8a1ca-37b6-4b6e-a43b-c7482f28db6c&p_p_id=EXT_11&p_p_action=1&p_p_state=maximized&p_p_mode=view&_EXT_11_struts_action=%2Fext%2Ffiles%2Fedit_file&_EXT_11_cmd=edit&inode=' + objId + '&userId=' + userId + '&referer=' + encodeURIComponent(referer);
+			loc += '/c/portal/layout?p_l_id=71b8a1ca-37b6-4b6e-a43b-c7482f28db6c&p_p_id=content&p_p_action=1&p_p_state=maximized&p_p_mode=view&_content_struts_action=%2Fext%2Ffiles%2Fedit_file&_content_cmd=edit&inode=' + objId + '&userId=' + userId + '&referer=' + encodeURIComponent(referer);
 		}
-		top.location = loc;
+		
+		if (inFrame) {
+			window.location = loc;
+		} else{
+			top.location = loc;
+		}
 	}
 
 	function editTemplate (objId, referer) {
 		var loc = '';
-		loc += '/c/portal/layout?p_l_id=71b8a1ca-37b6-4b6e-a43b-c7482f28db6c&p_p_id=EXT_11&p_p_action=1&p_p_state=maximized&p_p_mode=view&_EXT_11_struts_action=%2Fext%2Ftemplates%2Fedit_template&_EXT_11_cmd=edit&inode=' + objId + '&referer=' + encodeURIComponent(referer);
-		top.location = loc;
+		loc += '/c/portal/layout?p_l_id=71b8a1ca-37b6-4b6e-a43b-c7482f28db6c&p_p_id=content&p_p_action=1&p_p_state=maximized&p_p_mode=view&_content_struts_action=%2Fext%2Ftemplates%2Fedit_template&_content_cmd=edit&inode=' + objId + '&referer=' + encodeURIComponent(referer);
+		
+		if (inFrame) {
+			window.location = loc;
+		} else{
+			top.location = loc;
+		}
 	}
 
 	function editContainer (objId, referer) {
 		var loc = '';
-		loc += '/c/portal/layout?p_l_id=71b8a1ca-37b6-4b6e-a43b-c7482f28db6c&p_p_id=EXT_11&p_p_action=1&p_p_state=maximized&p_p_mode=view&_EXT_11_struts_action=%2Fext%2Fcontainers%2Fedit_container&_EXT_11_cmd=edit&inode=' + objId + '&referer=' + encodeURIComponent(referer);
-		top.location = loc;
+		loc += '/c/portal/layout?p_l_id=71b8a1ca-37b6-4b6e-a43b-c7482f28db6c&p_p_id=content&p_p_action=1&p_p_state=maximized&p_p_mode=view&_content_struts_action=%2Fext%2Fcontainers%2Fedit_container&_content_cmd=edit&inode=' + objId + '&referer=' + encodeURIComponent(referer);
+		
+		if (inFrame) {
+			window.location = loc;
+		} else {
+			top.location = loc;
+		}
 	}
 
 	function editContentlet (objId, referer) {
 		var loc = '';
-		loc += '/c/portal/layout?p_l_id=71b8a1ca-37b6-4b6e-a43b-c7482f28db6c&p_p_id=EXT_11&p_p_action=1&p_p_state=maximized&p_p_mode=view&_EXT_11_struts_action=%2Fext%2Fcontentlet%2Fedit_contentlet&_EXT_11_cmd=edit&inode=' + objId + '&referer=' + encodeURIComponent(referer);
-		top.location = loc;
+		loc += '/c/portal/layout?p_l_id=71b8a1ca-37b6-4b6e-a43b-c7482f28db6c&p_p_id=content&p_p_action=1&p_p_state=maximized&p_p_mode=view&_content_struts_action=%2Fext%2Fcontentlet%2Fedit_contentlet&_content_cmd=edit&inode=' + objId + '&referer=' + encodeURIComponent(referer);
+		
+		if (inFrame) {
+			window.location = loc;
+		} else {
+			top.location = loc;
+		}
 	}
 
 	function editStructure(inode){
-		var x ='/c/portal/layout?p_l_id=56fedb43-dbbf-4ce2-8b77-41fb73bad015&p_p_id=EXT_STRUCTURE&p_p_action=1&p_p_state=maximized&p_p_mode=view&_EXT_STRUCTURE_struts_action=%2Fext%2Fstructure%2Fedit_structure' + "&inode=" + inode;
-		window.location=x;
+		var x ='/c/portal/layout?p_l_id=56fedb43-dbbf-4ce2-8b77-41fb73bad015&p_p_id=content-types&p_p_action=1&p_p_state=maximized&p_p_mode=view&_content_types_struts_action=%2Fext%2Fstructure%2Fedit_structure&inode=' + inode;
+		window.location = x;
 	}
 
 	function editFolder(objId, referer) {
 		var loc = '';
-		loc += '/c/portal/layout?p_l_id=b7ab5d3c-5ee0-4195-a17e-8f5579d718dd&p_p_id=EXT_BROWSER&p_p_action=1&p_p_state=maximized&p_p_mode=view&_EXT_BROWSER_struts_action=%2Fext%2Ffolders%2Fedit_folder&inode=' + objId + '&referer=' + encodeURIComponent(referer);
-		top.location = loc;
+		loc += '/c/portal/layout?p_l_id=b7ab5d3c-5ee0-4195-a17e-8f5579d718dd&p_p_id=site-browser&p_p_action=1&p_p_state=maximized&p_p_mode=view&_site_browser_struts_action=%2Fext%2Ffolders%2Fedit_folder&inode=' + objId + '&referer=' + encodeURIComponent(referer);
+		
+		if (inFrame) {
+			window.location = loc;
+		} else {
+			top.location = loc;
+		}
 	}
 
 	/**
@@ -682,7 +703,7 @@
 	function resizeAdvancedSearch(){
 		var start = dojo.getStyle(dojo.byId('advancedSearchOptions'),'height');
 		// how tall should we be
-		var end=(dojo.position(dojo.byId("measureTheHeightOfSearchTools")).y + 203) - dojo.position(dojo.byId("advancedSearchOptions")).y;
+		var end=(dojo.position(dojo.byId("measureTheHeightOfSearchTools")).y) - dojo.position(dojo.byId("advancedSearchOptions")).y;
 
 		// resize
 
@@ -737,8 +758,7 @@
 			eval("totalContents=" + num + ";");
 
 			div = document.getElementById("matchingResultsDiv")
-			var strbuff = "<div class=\"yui-gb portlet-toolbar\"><div class=\"yui-u first\">showing " + begin + "-" + end + " of " + num + "</div><div id=\"tablemessage\" class=\"yui-u\" style=\"text-align:center;\">&nbsp</div><div class=\"yui-u\" style=\"text-align:right;\">";
-			strbuff+= "</div></div>";
+			var strbuff = "<div id=\"tablemessage\" class=\"contentlet-selection\">&nbsp</div><div class=\"contentlet-results\">Showing " + begin + "-" + end + " of " + num + "</div>";
 			div.innerHTML = strbuff;
 			div.style.display = "";
 

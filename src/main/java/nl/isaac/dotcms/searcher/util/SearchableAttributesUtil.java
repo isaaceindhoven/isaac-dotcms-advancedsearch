@@ -15,7 +15,6 @@ import com.dotmarketing.portlets.containers.model.Container;
 import com.dotmarketing.portlets.contentlet.model.Contentlet;
 import com.dotmarketing.portlets.fileassets.business.FileAsset;
 import com.dotmarketing.portlets.folders.model.Folder;
-import com.dotmarketing.portlets.htmlpages.model.HTMLPage;
 import com.dotmarketing.portlets.structure.model.Field;
 import com.dotmarketing.portlets.structure.model.Field.FieldType;
 import com.dotmarketing.portlets.structure.model.Structure;
@@ -27,11 +26,11 @@ import nl.isaac.dotcms.searcher.shared.Type;
 
 @SuppressWarnings("deprecation")
 public final class SearchableAttributesUtil {
-	
+
 	public SearchableAttributesUtil() {
 		super();
 	}
-	
+
 	public static Collection<SearchableAttribute> getTemplateAttributes(Template template) {
 		Collection<SearchableAttribute> searchableAttributes = new ArrayList<>(4);
 		searchableAttributes.add(new SearchableAttribute(Type.TEMPLATE, template.getTitle(), "Title", template.getTitle()));
@@ -40,7 +39,7 @@ public final class SearchableAttributesUtil {
 		searchableAttributes.add(new SearchableAttribute(Type.TEMPLATE, template.getTitle(), "Footer", template.getFooter()));
 		return searchableAttributes;
 	}
-	
+
 	public static Collection<SearchableAttribute> getContainerAttributes(Container container) {
 		Collection<SearchableAttribute> searchableAttributes = new ArrayList<>(4);
 		searchableAttributes.add(new SearchableAttribute(Type.CONTAINER, container.getTitle(), "Title", container.getTitle()));
@@ -49,32 +48,20 @@ public final class SearchableAttributesUtil {
 		searchableAttributes.add(new SearchableAttribute(Type.CONTAINER, container.getTitle(), "Postloop", container.getPostLoop()));
 		return searchableAttributes;
 	}
-	
-	// Used for older dotCMS versions
-	public static Collection<SearchableAttribute> getHtmlPageAttributes(HTMLPage htmlPage) {
-		Collection<SearchableAttribute> searchableAttributes = new ArrayList<>(5);
-		searchableAttributes.add(new SearchableAttribute(Type.HTMLPAGE, htmlPage.getTitle(), "Title", htmlPage.getTitle()));
-		searchableAttributes.add(new SearchableAttribute(Type.HTMLPAGE, htmlPage.getTitle(), "FriendlyName", htmlPage.getFriendlyName()));
-		searchableAttributes.add(new SearchableAttribute(Type.HTMLPAGE, htmlPage.getTitle(), "Meta Data", htmlPage.getMetadata()));
-		searchableAttributes.add(new SearchableAttribute(Type.HTMLPAGE, htmlPage.getTitle(), "SEO Description", htmlPage.getSeoDescription()));
-		searchableAttributes.add(new SearchableAttribute(Type.HTMLPAGE, htmlPage.getTitle(), "SEO Keywords", htmlPage.getSeoKeywords()));
-		return searchableAttributes;
-	}
-	
-	// Used for newer dotCMS versions
+
 	public static Collection<SearchableAttribute> getHtmlContentletAttributes(Contentlet htmlContentlet) {
 		Collection<SearchableAttribute> searchableAttributes = new ArrayList<>(1);
 		searchableAttributes.add(new SearchableAttribute(Type.HTMLPAGE, htmlContentlet.getTitle(), "Title", htmlContentlet.getTitle()));
 		return searchableAttributes;
 	}
-	
+
 	public static Collection<SearchableAttribute> getFolderAttributes(Folder folder) {
 		Collection<SearchableAttribute> searchableAttributes = new ArrayList<>(2);
 		searchableAttributes.add(new SearchableAttribute(Type.FOLDER, folder.getTitle(), "Name", folder.getName()));
 		searchableAttributes.add(new SearchableAttribute(Type.FOLDER, folder.getTitle(), "Title", folder.getTitle()));
 		return searchableAttributes;
 	}
-	
+
 	public static Collection<SearchableAttribute> getStructureAttributes(Structure structure) {
 		Collection<SearchableAttribute> searchableAttributes = new ArrayList<>();
 		List<Field> fields = FieldsCache.getFieldsByStructureInode(structure.getInode());
@@ -87,32 +74,36 @@ public final class SearchableAttributesUtil {
 				searchableAttributes.add(new SearchableAttribute(Type.STRUCTURE, structure.getName(), f.getFieldName(), f.getValues() + " " + f.getDefaultValue()));
 			}
 		}
-		
+
 		return searchableAttributes;
 	}
-	
+
 	public static Collection<SearchableAttribute> getFileAttributes(Contentlet fileContentlet, FileAsset file) {
 		Collection<SearchableAttribute> searchableAttributes = new ArrayList<>();
-		
+
 		searchableAttributes.add(new SearchableAttribute(Type.FILE, file.getFileName(), "Name", file.getFileName()));
 		searchableAttributes.add(new SearchableAttribute(Type.FILE, file.getFileName(), "Title", file.getTitle()));
-		
+
+		if (file == null || file.getFileName() == null) {
+			return searchableAttributes;
+		}
+
 		if (StringUtils.isBlank(file.getMetaData())) {
 			return searchableAttributes;
 		}
-		
+
 		JsonObject metaData = new JsonParser().parse(file.getMetaData()).getAsJsonObject();
-		
+
 		// ContentType returns: "text/plain; charset=ISO-8859-1"
 		if (metaData != null && metaData.has("contentType")) {
 			String contentTypeWithCharacterSet = metaData.get("contentType").getAsString();
 			String[] contentTypeWithCharacterSetArray = contentTypeWithCharacterSet.split(";");
-			
+
 			if (contentTypeWithCharacterSetArray.length > 0) {
 				String contentType = contentTypeWithCharacterSetArray[0];
-				
+
 				if (contentType.equals("text/plain")) {
-					String fileText = null;
+					String fileText = "";
 					try {
 						fileText = new String(IOUtils.toByteArray(file.getFileInputStream()));
 					} catch (IOException e) {
@@ -123,14 +114,14 @@ public final class SearchableAttributesUtil {
 				}
 			}
 		}
-		
+
 		return searchableAttributes;
 	}
-	
+
 	// Content or Widget
 	public static Collection<SearchableAttribute> getContentletAttributes(Type type, Contentlet contentlet) {
 		Collection<SearchableAttribute> searchableAttributes = new ArrayList<>();
-		
+
 		Map<String, Object> row = contentlet.getMap();
 		row.put("structureName", contentlet.getStructure().getName());
 
@@ -144,8 +135,8 @@ public final class SearchableAttributesUtil {
 				searchableAttributes.add(new SearchableAttribute(type, title, entry.getKey(), (String) entry.getValue()));
 			}
 		});
-		
+
 		return searchableAttributes;
 	}
-	
+
 }
