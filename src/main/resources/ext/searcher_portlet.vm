@@ -92,7 +92,7 @@
 	#set($filterSystemHost = $request.getSession().getAttribute('searcher_filterSystemHost'))
 #else
 	#set($status = "all")
-	#set($language_id = 1)
+	#set($language_id = $portletviewtool.defaultLanguage)
 	#set($type_id = "all")
 	#set($searchMode = "TEXT")
 	#set($version = "WORKING")
@@ -312,7 +312,7 @@
 									Hide System Host
 								</dd>
 							</dl>
-							<div class="clear"></div> 
+							<div class="clear"></div>
 
                             <div id="measureTheHeightOfSearchTools" class="clear"></div>
                         </div>
@@ -628,7 +628,7 @@
 		else {
 			loc += '/c/portal/layout?p_l_id=71b8a1ca-37b6-4b6e-a43b-c7482f28db6c&p_p_id=content&p_p_action=1&p_p_state=maximized&p_p_mode=view&_content_struts_action=%2Fext%2Ffiles%2Fedit_file&_content_cmd=edit&inode=' + objId + '&userId=' + userId + '&referer=' + encodeURIComponent(referer);
 		}
-		
+
 		if (inFrame) {
 			window.location = loc;
 		} else{
@@ -639,7 +639,7 @@
 	function editTemplate (objId, referer) {
 		var loc = '';
 		loc += '/c/portal/layout?p_l_id=71b8a1ca-37b6-4b6e-a43b-c7482f28db6c&p_p_id=content&p_p_action=1&p_p_state=maximized&p_p_mode=view&_content_struts_action=%2Fext%2Ftemplates%2Fedit_template&_content_cmd=edit&inode=' + objId + '&referer=' + encodeURIComponent(referer);
-		
+
 		if (inFrame) {
 			window.location = loc;
 		} else{
@@ -650,7 +650,7 @@
 	function editContainer (objId, referer) {
 		var loc = '';
 		loc += '/c/portal/layout?p_l_id=71b8a1ca-37b6-4b6e-a43b-c7482f28db6c&p_p_id=content&p_p_action=1&p_p_state=maximized&p_p_mode=view&_content_struts_action=%2Fext%2Fcontainers%2Fedit_container&_content_cmd=edit&inode=' + objId + '&referer=' + encodeURIComponent(referer);
-		
+
 		if (inFrame) {
 			window.location = loc;
 		} else {
@@ -661,7 +661,7 @@
 	function editContentlet (objId, referer) {
 		var loc = '';
 		loc += '/c/portal/layout?p_l_id=71b8a1ca-37b6-4b6e-a43b-c7482f28db6c&p_p_id=content&p_p_action=1&p_p_state=maximized&p_p_mode=view&_content_struts_action=%2Fext%2Fcontentlet%2Fedit_contentlet&_content_cmd=edit&inode=' + objId + '&referer=' + encodeURIComponent(referer);
-		
+
 		if (inFrame) {
 			window.location = loc;
 		} else {
@@ -677,7 +677,7 @@
 	function editFolder(objId, referer) {
 		var loc = '';
 		loc += '/c/portal/layout?p_l_id=b7ab5d3c-5ee0-4195-a17e-8f5579d718dd&p_p_id=site-browser&p_p_action=1&p_p_state=maximized&p_p_mode=view&_site_browser_struts_action=%2Fext%2Ffolders%2Fedit_folder&inode=' + objId + '&referer=' + encodeURIComponent(referer);
-		
+
 		if (inFrame) {
 			window.location = loc;
 		} else {

@@ -31,15 +31,15 @@ public class PortletViewtool implements ViewTool {
 	}
 
 	public Collection<SearchResult> paginateResultsAndGetSnippets(int pageNumber, HttpServletRequest req) {
-		
+
 		// User has performed a search before
-		if (req != null 
+		if (req != null
 				&& req.getSession().getAttribute("searcher_filteredResults") != null
 				&& req.getSession().getAttribute("searcher_text") != null
 				&& req.getSession().getAttribute("searcher_mode") != null
 				&& req.getSession().getAttribute("searcher_snippetSizeBefore") != null
 				&& req.getSession().getAttribute("searcher_snippetSizeAfter") != null) {
-			
+
 			String searchString = (String) req.getSession().getAttribute("searcher_text");
 			String searchMode = (String) req.getSession().getAttribute("searcher_mode");
 			String excludeText = (String) req.getSession().getAttribute("searcher_excludeText");
@@ -49,7 +49,7 @@ public class PortletViewtool implements ViewTool {
 
 			@SuppressWarnings("unchecked")
 			ArrayList<PortletHit> allHits = new ArrayList<PortletHit>((List<PortletHit>) req.getSession().getAttribute("searcher_filteredResults"));
-			
+
 			int resultSize = allHits.size();
 			int pageSize = (int) Math.ceil((double) resultSize / resultsPerPage);
 
@@ -57,22 +57,22 @@ public class PortletViewtool implements ViewTool {
 
 			int fromIndex = (pageNumber - 1) * resultsPerPage;
 			int toIndex = fromIndex + resultsPerPage;
-			
+
 			Collection<PortletHit> paginatedHits = allHits.subList(Math.max(0, fromIndex), Math.min(toIndex, resultSize));
-			
+
 			SearcherParser parser = new SearcherParser(searchString, searchMode, snippetSizeBefore, snippetSizeAfter, excludeText);
-			
+
 			// Parse hits to SearchResult and get snippets
 			Collection<SearchResult> paginatedSearchResults = parser.parse(paginatedHits);
-			
+
 			req.getSession().setAttribute("pageSize", pageSize);
 			req.setAttribute("paginatedResultsStartIndex", fromIndex + 1);
 			req.setAttribute("paginatedResultsEndIndex", Math.min(toIndex, resultSize));
-			
+
 			Pagination pagination = new Pagination(pageNumber, pageSize, allHits.size(), fromIndex + 1, Math.min(toIndex, resultSize));
-			
+
 			req.setAttribute("pagination", pagination);
-			
+
 			return paginatedSearchResults.size() > 0 ? paginatedSearchResults : null;
 		}
 
@@ -120,6 +120,10 @@ public class PortletViewtool implements ViewTool {
 
 	public List<String> getAllHosts() throws DotDataException, DotSecurityException {
 		return new HostDAO().getAllHosts();
+	}
+
+	public long getDefaultLanguage() {
+		return APILocator.getLanguageAPI().getDefaultLanguage().getId();
 	}
 
 }
