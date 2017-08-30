@@ -1,14 +1,6 @@
 package nl.isaac.dotcms.searcher.util;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
-import com.dotcms.repackage.com.google.gson.JsonObject;
-import com.dotcms.repackage.com.google.gson.JsonParser;
-import com.dotcms.repackage.org.apache.commons.io.IOUtils;
+import org.apache.commons.io.IOUtils;
 import com.dotcms.repackage.org.apache.commons.lang.StringUtils;
 import com.dotmarketing.cache.FieldsCache;
 import com.dotmarketing.portlets.containers.model.Container;
@@ -20,9 +12,16 @@ import com.dotmarketing.portlets.structure.model.Field.FieldType;
 import com.dotmarketing.portlets.structure.model.Structure;
 import com.dotmarketing.portlets.templates.model.Template;
 import com.dotmarketing.util.Logger;
-
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import nl.isaac.dotcms.searcher.shared.SearchableAttribute;
 import nl.isaac.dotcms.searcher.shared.Type;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("deprecation")
 public final class SearchableAttributesUtil {
