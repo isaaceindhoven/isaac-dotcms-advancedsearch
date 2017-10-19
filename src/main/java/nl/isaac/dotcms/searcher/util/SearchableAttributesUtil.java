@@ -1,6 +1,13 @@
 package nl.isaac.dotcms.searcher.util;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.io.IOUtils;
+
 import com.dotcms.repackage.org.apache.commons.lang.StringUtils;
 import com.dotmarketing.cache.FieldsCache;
 import com.dotmarketing.portlets.containers.model.Container;
@@ -14,14 +21,9 @@ import com.dotmarketing.portlets.templates.model.Template;
 import com.dotmarketing.util.Logger;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
 import nl.isaac.dotcms.searcher.shared.SearchableAttribute;
 import nl.isaac.dotcms.searcher.shared.Type;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 @SuppressWarnings("deprecation")
 public final class SearchableAttributesUtil {
@@ -104,7 +106,7 @@ public final class SearchableAttributesUtil {
 				if (contentType.equals("text/plain")) {
 					String fileText = "";
 					try {
-						fileText = new String(IOUtils.toByteArray(file.getFileInputStream()));
+						fileText = new String(IOUtils.toByteArray(file.getInputStream()));
 					} catch (IOException e) {
 						fileText = "";
 						Logger.warn(SearchableAttributesUtil.class, "Error while converting bytes to array of file: " + file.getFileName(), e);
