@@ -47,6 +47,11 @@ com.dotmarketing.portlets.languagesmanager.model,
 com.dotmarketing.portlets.templates.business,
 com.dotmarketing.portlets.templates.model,
 com.liferay.portal
+
+// for 5.0.0 and up
+org.apache.logging.log4j,
+org.apache.logging.log4j.core,
+org.apache.logging.log4j.spi
 ```
 
 * Click on "Save Packages".

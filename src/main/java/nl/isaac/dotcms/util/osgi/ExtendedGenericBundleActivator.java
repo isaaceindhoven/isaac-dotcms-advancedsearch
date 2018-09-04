@@ -26,7 +26,10 @@ import javax.servlet.Filter;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 
+import org.apache.commons.lang.Validate;
 import org.apache.felix.http.api.ExtHttpService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.tools.view.context.ViewContext;
 import org.osgi.framework.Bundle;
@@ -41,14 +44,12 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.impl.StdSchedulerFactory;
 
-import com.dotcms.repackage.org.apache.commons.lang.Validate;
-import com.dotcms.repackage.org.apache.logging.log4j.LogManager;
-import com.dotcms.repackage.org.apache.logging.log4j.core.LoggerContext;
 import com.dotcms.rest.WebResource;
 import com.dotcms.rest.config.RestServiceUtil;
 import com.dotmarketing.business.APILocator;
 import com.dotmarketing.business.CacheLocator;
 import com.dotmarketing.exception.DotDataException;
+import com.dotmarketing.filters.CMSFilter;
 import com.dotmarketing.loggers.Log4jUtil;
 import com.dotmarketing.osgi.GenericBundleActivator;
 import com.dotmarketing.portlets.contentlet.business.ContentletAPIPostHook;
@@ -141,38 +142,64 @@ public abstract class ExtendedGenericBundleActivator extends GenericBundleActiva
 	 * @param handleBundleServices is used to add/remove bundleServices, which are needed for the DispatcherServlet
 	 */
 	private void addServlet(BundleContext context, final Servlet servlet, final String path, final boolean handleBundleServices) {
-		ServiceTracker<ExtHttpService, ExtHttpService> tracker = new ServiceTracker<ExtHttpService, ExtHttpService>(context, ExtHttpService.class, null) {
-			@Override public ExtHttpService addingService(ServiceReference<ExtHttpService> reference) {
-				ExtHttpService extHttpService = super.addingService(reference);
+		ServiceTracker serviceTracker = new ServiceTracker(context, servlet.getClass(), null);
+		ServiceReference sRef = context.getServiceReference( ExtHttpService.class.getName() );
 
-				try {
-					if(handleBundleServices) {
-						publishBundleServices(context);
-					}
-
-					extHttpService.registerServlet(path, servlet, null, null);
-
-				} catch (Exception e) {
-					throw new RuntimeException("Failed to register servlet " + servlet.getClass().getSimpleName(), e);
-				}
-				return extHttpService;
+		if(sRef != null) {
+			serviceTracker.addingService(sRef);
+			ExtHttpService httpService = (ExtHttpService) context.getService(sRef);
+			try {
+				httpService.registerServlet(path, servlet, null, null);
+			} catch (Exception e) {
+				Logger.warn(this, "Exception while registering servlet", e);
 			}
-			@Override public void removedService(ServiceReference<ExtHttpService> reference, ExtHttpService extHttpService) {
-				extHttpService.unregisterServlet(servlet);
-				if(handleBundleServices) {
-					try {
-						unpublishBundleServices();
-					} catch (Exception e) {
-						Logger.error(this, "Failed to unregister servlet " + servlet.getClass().getSimpleName(), e);
-					}
-				}
+		}
 
-				super.removedService(reference, extHttpService);
-			}
-		};
+		Logger.info(this, "Add excludePath /app" + path);
+		CMSFilter.addExclude("/app" + path);
 
-		this.trackers.add(tracker);
-		tracker.open();
+		serviceTracker.open();
+
+    //
+    //
+    //
+		//ServiceTracker<ExtHttpService, ExtHttpService> tracker = new ServiceTracker<ExtHttpService, ExtHttpService>(context, ExtHttpService.class, null) {
+		//	@Override public ExtHttpService addingService(ServiceReference<ExtHttpService> reference) {
+		//		ExtHttpService extHttpService = super.addingService(reference);
+    //
+		//		try {
+		//			if(handleBundleServices) {
+		//				publishBundleServices(context);
+		//			}
+    //
+		//			CMSFilter.addExclude( "/app" + path );
+    //
+		//			extHttpService.registerServlet(path, servlet, null, null);
+    //
+		//		} catch (Exception e) {
+		//			throw new RuntimeException("Failed to register servlet " + servlet.getClass().getSimpleName(), e);
+		//		}
+		//		return extHttpService;
+		//	}
+		//	@Override public void removedService(ServiceReference<ExtHttpService> reference, ExtHttpService extHttpService) {
+		//		extHttpService.unregisterServlet(servlet);
+		//		if(handleBundleServices) {
+		//			try {
+		//				unpublishBundleServices();
+		//			} catch (Exception e) {
+		//				Logger.error(this, "Failed to unregister servlet " + servlet.getClass().getSimpleName(), e);
+		//			}
+		//		}
+    //
+		//		CMSFilter.removeExclude( "/app" + path );
+    //
+		//		super.removedService(reference, extHttpService);
+		//	}
+		//};
+
+
+		this.trackers.add(serviceTracker);
+		serviceTracker.open();
 
 	}
 
@@ -371,30 +398,11 @@ public abstract class ExtendedGenericBundleActivator extends GenericBundleActiva
 
 		Logger.info(this, "Registering portlet(s)");
 
-		ServiceTracker<ExtHttpService, ExtHttpService> tracker = new ServiceTracker<ExtHttpService, ExtHttpService>(context, ExtHttpService.class, null) {
-			@Override public ExtHttpService addingService(ServiceReference<ExtHttpService> reference) {
-				ExtHttpService extHttpService = super.addingService(reference);
-
-				try {
-					registerPortlets(context, new String[] { "conf/portlet.xml", "conf/liferay-portlet.xml"});
-				} catch (Exception e) {
-					throw new RuntimeException(e);
-				}
-
-				return extHttpService;
-			}
-			@Override public void removedService(ServiceReference<ExtHttpService> reference, ExtHttpService extHttpService) {
-				try {
-					unregisterPortlets();
-				} catch (Exception e) {
-					Logger.warn(this, "Exception while unregistering portlet", e);
-				}
-				super.removedService(reference, extHttpService);
-			}
-		};
-
-		tracker.open();
-		this.trackers.add(tracker);
+		try {
+			registerPortlets(context, new String[] { "conf/portlet.xml", "conf/liferay-portlet.xml"});
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 
 		CacheLocator.getVeloctyResourceCache().clearCache();
 	}

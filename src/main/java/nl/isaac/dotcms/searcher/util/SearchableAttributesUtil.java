@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 
-import com.dotcms.repackage.org.apache.commons.lang.StringUtils;
 import com.dotmarketing.cache.FieldsCache;
 import com.dotmarketing.portlets.containers.model.Container;
 import com.dotmarketing.portlets.contentlet.model.Contentlet;
@@ -93,7 +93,13 @@ public final class SearchableAttributesUtil {
 			return searchableAttributes;
 		}
 
-		JsonObject metaData = new JsonParser().parse(file.getMetaData()).getAsJsonObject();
+		JsonObject metaData = null;
+
+		try {
+			metaData = new JsonParser().parse(file.getMetaData()).getAsJsonObject();
+		} catch (Throwable t) {
+			Logger.warn(SearchableAttributesUtil.class, "Can't parse metadata of " + file.getPath() + file.getFileName());
+		}
 
 		// ContentType returns: "text/plain; charset=ISO-8859-1"
 		if (metaData != null && metaData.has("contentType")) {

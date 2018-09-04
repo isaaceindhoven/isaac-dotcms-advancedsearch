@@ -17,7 +17,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.dotcms.repackage.org.apache.commons.lang.StringUtils;
 import com.dotmarketing.util.Logger;
 
 import nl.isaac.dotcms.searcher.dao.HostDAO;
@@ -30,6 +29,7 @@ import nl.isaac.dotcms.searcher.shared.Type;
 import nl.isaac.dotcms.searcher.shared.UserSearchValues;
 import nl.isaac.dotcms.searcher.shared.Version;
 import nl.isaac.dotcms.util.osgi.RequestHelper;
+import org.apache.commons.lang.StringUtils;
 
 public class SearcherServlet extends HttpServlet {
 
