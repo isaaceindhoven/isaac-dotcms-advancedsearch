@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.velocity.tools.view.tools.ViewTool;
 
 import com.dotmarketing.business.APILocator;
@@ -48,7 +48,7 @@ public class PortletViewtool implements ViewTool {
 			int resultsPerPage = (int) req.getSession().getAttribute("searcher_resultsPerPage");
 
 			@SuppressWarnings("unchecked")
-			ArrayList<PortletHit> allHits = new ArrayList<PortletHit>((List<PortletHit>) req.getSession().getAttribute("searcher_filteredResults"));
+			ArrayList<PortletHit> allHits = new ArrayList<>((List<PortletHit>) req.getSession().getAttribute("searcher_filteredResults"));
 
 			int resultSize = allHits.size();
 			int pageSize = (int) Math.ceil((double) resultSize / resultsPerPage);
@@ -86,15 +86,15 @@ public class PortletViewtool implements ViewTool {
 		if (searchMode == SearchMode.TEXT) {
 			result = encodedResult.replace(searchParam, "<span class=\"match\">" + searchParam + "</span>");
 		} else if (searchMode == SearchMode.REGEX) {
-			String decodedResult = StringEscapeUtils.unescapeHtml(encodedResult);
-			String decodedSearchParam = StringEscapeUtils.unescapeHtml(searchParam);
+			String decodedResult = StringEscapeUtils.unescapeHtml4(encodedResult);
+			String decodedSearchParam = StringEscapeUtils.unescapeHtml4(searchParam);
 
 			Pattern pattern = Pattern.compile(decodedSearchParam);
 			Matcher matcher = pattern.matcher(decodedResult);
 
 			while (matcher.find()) {
-				String encodedMatch = StringEscapeUtils.escapeHtml(matcher.group());
-				String reEncodedResult = StringEscapeUtils.escapeHtml(decodedResult);
+				String encodedMatch = StringEscapeUtils.escapeHtml4(matcher.group());
+				String reEncodedResult = StringEscapeUtils.escapeHtml4(decodedResult);
 				result += reEncodedResult.replace(encodedMatch, "<span class=\"match\">" + encodedMatch + "</span>");
 			}
 		}
