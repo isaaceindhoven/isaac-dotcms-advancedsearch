@@ -10,10 +10,7 @@ import nl.isaac.dotcms.util.osgi.ViewToolScope;
 public class AdvancedSearchActivator extends ExtendedGenericBundleActivator {
 
 	@Override
-	public void start(BundleContext context) throws Exception {
-
-		// Default DotCMS call
-		initializeServices(context);
+	public void init(BundleContext context) {
 
 		// Add the viewtools
 		addViewTool(context, PortletViewtool.class, "portletviewtool", ViewToolScope.APPLICATION);

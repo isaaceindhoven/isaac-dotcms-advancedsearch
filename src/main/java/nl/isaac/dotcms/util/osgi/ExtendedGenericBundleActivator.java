@@ -22,12 +22,13 @@ import java.util.Properties;
 import java.util.PropertyResourceBundle;
 import java.util.Set;
 
-import javax.servlet.Filter;
 import javax.servlet.Servlet;
-import javax.servlet.ServletException;
 
+import com.dotcms.filters.interceptor.FilterWebInterceptorProvider;
+import com.dotcms.filters.interceptor.WebInterceptorDelegate;
+import com.dotmarketing.filters.AutoLoginFilter;
+import com.dotmarketing.util.Config;
 import org.apache.commons.lang3.Validate;
-import org.apache.felix.http.api.ExtHttpService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.velocity.app.VelocityEngine;
@@ -35,21 +36,18 @@ import org.apache.velocity.tools.view.context.ViewContext;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.ServiceReference;
-import org.osgi.util.tracker.ServiceTracker;
 import org.quartz.CronTrigger;
 import org.quartz.Job;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.impl.StdSchedulerFactory;
+import org.springframework.web.servlet.DispatcherServlet;
 
-import com.dotcms.rest.WebResource;
 import com.dotcms.rest.config.RestServiceUtil;
 import com.dotmarketing.business.APILocator;
 import com.dotmarketing.business.CacheLocator;
 import com.dotmarketing.exception.DotDataException;
-import com.dotmarketing.filters.CMSFilter;
 import com.dotmarketing.loggers.Log4jUtil;
 import com.dotmarketing.osgi.GenericBundleActivator;
 import com.dotmarketing.portlets.contentlet.business.ContentletAPIPostHook;
@@ -64,14 +62,16 @@ import com.dotmarketing.util.VelocityUtil;
  *
  */
 public abstract class ExtendedGenericBundleActivator extends GenericBundleActivator {
-	private List<ServiceTracker<ExtHttpService, ExtHttpService>> trackers = new ArrayList<>();
+	//	private List<ServiceTracker<ExtHttpService, ExtHttpService>> trackers = new ArrayList<>();
+	private List<Runnable> cleanupFunctions = new ArrayList<>();
 	private boolean languageVariablesNotAdded = true;
 	private static final String DOTCMS_HOME;
+	private String bundleName;
 
-    private Scheduler scheduler;
-    private Properties schedulerProperties;
+	private Scheduler scheduler;
+	private Properties schedulerProperties;
 
-    private LoggerContext pluginLoggerContext;
+	private LoggerContext pluginLoggerContext;
 
 	static {
 		String userDir = System.getProperty( "user.dir" );
@@ -84,15 +84,32 @@ public abstract class ExtendedGenericBundleActivator extends GenericBundleActiva
 		Logger.debug(ExtendedGenericBundleActivator.class, "DOTCMS_HOME: " + DOTCMS_HOME);
 	}
 
+	public abstract void init(BundleContext context);
+
+	final public void start(BundleContext context) throws Exception {
+		try {
+			super.initializeServices(context);
+			initializeLoggerContext();
+			Logger.info(this, "Starting " + context.getBundle().getSymbolicName());
+			addMonitoringServlet(context);
+			init(context);
+			Logger.info(this, "Started " + context.getBundle().getSymbolicName());
+		} catch (Throwable t) {
+			Logger.error(this, "Initialization of plugin: " + context.getBundle().getSymbolicName() + " failed with error:", t);
+			throw t;
+		}
+	}
+
 	@Override
-	protected void initializeServices(BundleContext context) throws Exception {
-		super.initializeServices(context);
+	public void stop(BundleContext context) throws Exception {
+		unregisterServices(context);
+	}
 
-		initializeLoggerContext();
-
+	protected void addMonitoringServlet(BundleContext context) throws Exception {
 		Bundle bundle = FrameworkUtil.getBundle(this.getClass());
-		String servletPath = "/servlets/monitoring/" + bundle.getHeaders().get("Bundle-Name");
-		addServlet(context, MonitoringServlet.class, servletPath);
+		bundleName = bundle.getHeaders().get("Bundle-Name");
+		String servletPath = "/servlets/monitoring/" + bundleName;
+		addServlet(context, new nl.isaac.dotcms.shared.osgi.MonitoringServlet(bundleName), servletPath, false);
 
 	}
 
@@ -101,20 +118,20 @@ public abstract class ExtendedGenericBundleActivator extends GenericBundleActiva
 		viewtool.setClassname(viewtoolClass);
 		viewtool.setKey(key);
 		switch (scope) {
-		case APPLICATION:
-			viewtool.setScope(ViewContext.APPLICATION);
-			break;
-		case REQUEST:
-			viewtool.setScope(ViewContext.REQUEST);
-			break;
-		case RESPONSE:
-			viewtool.setScope(ViewContext.RESPONSE);
-			break;
-		case SESSION:
-			viewtool.setScope(ViewContext.SESSION);
-			break;
-		default:
-			throw new RuntimeException("Unknown viewtoolscope: " + scope);
+			case APPLICATION:
+				viewtool.setScope(ViewContext.APPLICATION);
+				break;
+			case REQUEST:
+				viewtool.setScope(ViewContext.REQUEST);
+				break;
+			case RESPONSE:
+				viewtool.setScope(ViewContext.RESPONSE);
+				break;
+			case SESSION:
+				viewtool.setScope(ViewContext.SESSION);
+				break;
+			default:
+				throw new RuntimeException("Unknown viewtoolscope: " + scope);
 		}
 
 		registerViewToolService(context, viewtool);
@@ -123,17 +140,15 @@ public abstract class ExtendedGenericBundleActivator extends GenericBundleActiva
 	protected void addServlet(BundleContext context, final Class<? extends Servlet> clazz, final String path) {
 
 		Validate.notNull(clazz, "Servlet class may not be null");
-		Validate.notEmpty(path, "Servlet path may not be null");
-		Validate.isTrue(path.startsWith("/"), "Servlet path must start with a /");
 
 		final Servlet servlet;
 		try {
 			servlet = clazz.newInstance();
-		} catch (InstantiationException |IllegalAccessException e) {
+		} catch (InstantiationException e) {
+			throw new RuntimeException(e);
+		} catch (IllegalAccessException e) {
 			throw new RuntimeException(e);
 		}
-
-		Logger.info(this, "Registering Servlet " + servlet.getClass().getSimpleName() + " on /app" + path);
 
 		addServlet(context, servlet, path, false);
 	}
@@ -142,101 +157,71 @@ public abstract class ExtendedGenericBundleActivator extends GenericBundleActiva
 	 * @param handleBundleServices is used to add/remove bundleServices, which are needed for the DispatcherServlet
 	 */
 	private void addServlet(BundleContext context, final Servlet servlet, final String path, final boolean handleBundleServices) {
-		ServiceTracker serviceTracker = new ServiceTracker(context, servlet.getClass(), null);
-		ServiceReference sRef = context.getServiceReference( ExtHttpService.class.getName() );
+		Validate.notEmpty(path, "Servlet path may not be null");
+		Validate.isTrue(path.startsWith("/"), "Servlet path must start with a /");
 
-		if(sRef != null) {
-			serviceTracker.addingService(sRef);
-			ExtHttpService httpService = (ExtHttpService) context.getService(sRef);
-			try {
-				httpService.registerServlet(path, servlet, null, null);
-			} catch (Exception e) {
-				Logger.warn(this, "Exception while registering servlet", e);
+		Logger.info(this, "Registering Servlet " + servlet.getClass().getSimpleName() + " on /app" + path);
+
+		final FilterWebInterceptorProvider filterWebInterceptorProvider =
+				FilterWebInterceptorProvider.getInstance(Config.CONTEXT);
+
+		final WebInterceptorDelegate delegate =
+				filterWebInterceptorProvider.getDelegate(AutoLoginFilter.class);
+
+		final ServletWebInterceptor servletWebInterceptor = new ServletWebInterceptor(context, servlet, path);
+		delegate.addFirst(servletWebInterceptor);
+
+		// For some reason when other plugins use this class the below code fails when using lambdas
+		cleanupFunctions.add(new Runnable() {
+			@Override
+			public void run() {
+				delegate.remove(servletWebInterceptor.getName(), true);
 			}
-		}
-
-		Logger.info(this, "Add excludePath /app" + path);
-		CMSFilter.addExclude("/app" + path);
-
-		serviceTracker.open();
-
-    //
-    //
-    //
-		//ServiceTracker<ExtHttpService, ExtHttpService> tracker = new ServiceTracker<ExtHttpService, ExtHttpService>(context, ExtHttpService.class, null) {
-		//	@Override public ExtHttpService addingService(ServiceReference<ExtHttpService> reference) {
-		//		ExtHttpService extHttpService = super.addingService(reference);
-    //
-		//		try {
-		//			if(handleBundleServices) {
-		//				publishBundleServices(context);
-		//			}
-    //
-		//			CMSFilter.addExclude( "/app" + path );
-    //
-		//			extHttpService.registerServlet(path, servlet, null, null);
-    //
-		//		} catch (Exception e) {
-		//			throw new RuntimeException("Failed to register servlet " + servlet.getClass().getSimpleName(), e);
-		//		}
-		//		return extHttpService;
-		//	}
-		//	@Override public void removedService(ServiceReference<ExtHttpService> reference, ExtHttpService extHttpService) {
-		//		extHttpService.unregisterServlet(servlet);
-		//		if(handleBundleServices) {
-		//			try {
-		//				unpublishBundleServices();
-		//			} catch (Exception e) {
-		//				Logger.error(this, "Failed to unregister servlet " + servlet.getClass().getSimpleName(), e);
-		//			}
-		//		}
-    //
-		//		CMSFilter.removeExclude( "/app" + path );
-    //
-		//		super.removedService(reference, extHttpService);
-		//	}
-		//};
-
-
-		this.trackers.add(serviceTracker);
-		serviceTracker.open();
-
+		});
 	}
 
-	protected void addFilter(BundleContext context, final Class <? extends Filter> clazz, final String regex) {
-		Validate.notNull(clazz, "Filter class may not be null");
-		Validate.notEmpty(regex, "Filter regex may not be null");
-		Validate.isTrue(regex.startsWith("/"), "Filter regex must start with a /");
-
-		final Filter filterToRegister;
-		try {
-			filterToRegister = clazz.newInstance();
-		} catch (InstantiationException | IllegalAccessException e) {
-			throw new RuntimeException(e);
-		}
-
-		Logger.info(this, "Registering Filter " + filterToRegister.getClass().getSimpleName());
-
-		ServiceTracker<ExtHttpService, ExtHttpService> tracker = new ServiceTracker<ExtHttpService, ExtHttpService>(context, ExtHttpService.class, null) {
-			@Override public ExtHttpService addingService(ServiceReference<ExtHttpService> reference) {
-				ExtHttpService extHttpService = super.addingService(reference);
-
-				try {
-					extHttpService.registerFilter(filterToRegister, regex, null, trackers.size(), null);
-				} catch (ServletException e) {
-					throw new RuntimeException("Failed to register filter " + filterToRegister.getClass().getSimpleName(), e);
-				}
-				return extHttpService;
-			}
-			@Override public void removedService(ServiceReference<ExtHttpService> reference, ExtHttpService extHttpService) {
-				extHttpService.unregisterFilter(filterToRegister);
-				super.removedService(reference, extHttpService);
-			}
-		};
-
-		tracker.open();
-		this.trackers.add(tracker);
-	}
+//	protected void addFilter(BundleContext context, final Class <? extends Filter> clazz, final String regex) {
+//		Validate.notNull(clazz, "Filter class may not be null");
+//		Validate.notEmpty(regex, "Filter regex may not be null");
+//		Validate.isTrue(regex.startsWith("/"), "Filter regex must start with a /");
+//
+//		final Filter filterToRegister;
+//		try {
+//			filterToRegister = clazz.newInstance();
+//		} catch (InstantiationException e) {
+//			throw new RuntimeException(e);
+//		} catch (IllegalAccessException e) {
+//			throw new RuntimeException(e);
+//		}
+//
+//		Logger.info(this, "Registering Filter " + filterToRegister.getClass().getSimpleName());
+//
+//		ServiceTracker<ExtHttpService, ExtHttpService> tracker = new ServiceTracker<ExtHttpService, ExtHttpService>(context, ExtHttpService.class, null) {
+//			@Override public ExtHttpService addingService(ServiceReference<ExtHttpService> reference) {
+//				ExtHttpService extHttpService = super.addingService(reference);
+//
+//				try {
+//					extHttpService.unregisterFilter(filterToRegister);
+//				} catch (Throwable t) {
+//					// Do nothing, it was probably not registered
+//				}
+//
+//				try {
+//					extHttpService.registerFilter(filterToRegister, regex, null, trackers.size(), null);
+//				} catch (ServletException e) {
+//					throw new RuntimeException("Failed to register filter " + filterToRegister.getClass().getSimpleName(), e);
+//				}
+//				return extHttpService;
+//			}
+//			@Override public void removedService(ServiceReference<ExtHttpService> reference, ExtHttpService extHttpService) {
+//				extHttpService.unregisterFilter(filterToRegister);
+//				super.removedService(reference, extHttpService);
+//			}
+//		};
+//
+//		tracker.open();
+//		this.trackers.add(tracker);
+//	}
 
 	protected void addMacros(BundleContext context) {
 		Logger.info(this, "Registering macros");
@@ -247,7 +232,7 @@ public abstract class ExtendedGenericBundleActivator extends GenericBundleActiva
 		InputStream instream = null;
 		try {
 			instream = macrosExtUrl.openStream();
-		    engine.evaluate(VelocityUtil.getBasicContext(), new StringWriter(), context.getBundle().getSymbolicName(), new InputStreamReader(instream, Charset.forName("UTF-8")));
+			engine.evaluate(VelocityUtil.getBasicContext(), new StringWriter(), context.getBundle().getSymbolicName(), new InputStreamReader(instream, Charset.forName("UTF-8")));
 		} catch (IOException e) {
 			Logger.warn(this, "Exception while reading macros-ext.vm", e);
 		} finally {
@@ -313,7 +298,9 @@ public abstract class ExtendedGenericBundleActivator extends GenericBundleActiva
 		Logger.info(this, "Registering PreHook " + clazz.getSimpleName());
 		try {
 			super.addPreHook(clazz.newInstance());
-		} catch (InstantiationException | IllegalAccessException e) {
+		} catch (InstantiationException e) {
+			throw new RuntimeException(e);
+		} catch (IllegalAccessException e) {
 			throw new RuntimeException(e);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -324,7 +311,9 @@ public abstract class ExtendedGenericBundleActivator extends GenericBundleActiva
 		Logger.info(this, "Registering PostHook " + clazz.getSimpleName());
 		try {
 			super.addPostHook(clazz.newInstance());
-		} catch (InstantiationException | IllegalAccessException e) {
+		} catch (InstantiationException e) {
+			throw new RuntimeException(e);
+		} catch (IllegalAccessException e) {
 			throw new RuntimeException(e);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -370,23 +359,18 @@ public abstract class ExtendedGenericBundleActivator extends GenericBundleActiva
 	}
 
 
-	protected void addRestService(BundleContext context, final Class<? extends WebResource> clazz) {
-		Logger.info(this, "Registering REST service " + clazz.getSimpleName());
-		ServiceTracker<ExtHttpService, ExtHttpService> tracker = new ServiceTracker<ExtHttpService, ExtHttpService>(context, ExtHttpService.class, null) {
-			@Override public ExtHttpService addingService(ServiceReference<ExtHttpService> reference) {
-				ExtHttpService extHttpService = super.addingService(reference);
+	protected void addRestService(BundleContext context, final Class<?> clazz) {
+		final Class thisClass = this.getClass();
 
-				RestServiceUtil.addResource(clazz);
-				return extHttpService;
-			}
-			@Override public void removedService(ServiceReference<ExtHttpService> reference, ExtHttpService extHttpService) {
+		Logger.info(thisClass, "Added REST service " + clazz.getSimpleName());
+		RestServiceUtil.addResource(clazz);
+
+		cleanupFunctions.add(new Runnable() {
+			@Override
+			public void run() {
 				RestServiceUtil.removeResource(clazz);
-				super.removedService(reference, extHttpService);
 			}
-		};
-
-		tracker.open();
-		this.trackers.add(tracker);
+		});
 	}
 
 
@@ -407,6 +391,21 @@ public abstract class ExtendedGenericBundleActivator extends GenericBundleActiva
 		CacheLocator.getVeloctyResourceCache().clearCache();
 	}
 
+	protected void addSpringController(BundleContext context, String path, String contextConfigLocation) {
+		Logger.info(this, "Registering spring controller " + contextConfigLocation);
+
+		try {
+			publishBundleServices(context);
+		} catch (Exception e) {
+			Logger.warn(this, "Unable to publish bundle services", e);
+		}
+
+		DispatcherServlet dispatcherServlet = new DispatcherServlet();
+		dispatcherServlet.setContextConfigLocation(contextConfigLocation);
+
+		addServlet(context, dispatcherServlet, path, true);
+	}
+
 	/**
 	 * Set the properties that the org.quartz Scheduler will use. Can only be called once, and only before
 	 * a Job is added.
@@ -420,22 +419,22 @@ public abstract class ExtendedGenericBundleActivator extends GenericBundleActiva
 	}
 
 	protected Properties getDefaultSchedulerProperties() {
-        Properties properties = new Properties();
+		Properties properties = new Properties();
 
-        //Default properties, retrieved from a quartz.properties file
-        //We only changed the threadcount to 1
-        properties.setProperty("org.quartz.scheduler.instanceName", "DefaultQuartzScheduler");
-        properties.setProperty("org.quartz.scheduler.rmi.export", "false");
-        properties.setProperty("org.quartz.scheduler.rmi.proxy", "false");
-        properties.setProperty("org.quartz.scheduler.wrapJobExecutionInUserTransaction", "false");
-        properties.setProperty("org.quartz.threadPool.class", "org.quartz.simpl.SimpleThreadPool");
-        properties.setProperty("org.quartz.threadPool.threadCount", "1");
-        properties.setProperty("org.quartz.threadPool.threadPriority", "5");
-        properties.setProperty("org.quartz.threadPool.threadsInheritContextClassLoaderOfInitializingThread", "true");
-        properties.setProperty("org.quartz.jobStore.misfireThreshold", "60000");
-        properties.setProperty("org.quartz.jobStore.class", "org.quartz.simpl.RAMJobStore");
+		//Default properties, retrieved from a quartz.properties file
+		//We only changed the threadcount to 1
+		properties.setProperty("org.quartz.scheduler.instanceName", "DefaultQuartzScheduler");
+		properties.setProperty("org.quartz.scheduler.rmi.export", "false");
+		properties.setProperty("org.quartz.scheduler.rmi.proxy", "false");
+		properties.setProperty("org.quartz.scheduler.wrapJobExecutionInUserTransaction", "false");
+		properties.setProperty("org.quartz.threadPool.class", "org.quartz.simpl.SimpleThreadPool");
+		properties.setProperty("org.quartz.threadPool.threadCount", "1");
+		properties.setProperty("org.quartz.threadPool.threadPriority", "5");
+		properties.setProperty("org.quartz.threadPool.threadsInheritContextClassLoaderOfInitializingThread", "true");
+		properties.setProperty("org.quartz.jobStore.misfireThreshold", "60000");
+		properties.setProperty("org.quartz.jobStore.class", "org.quartz.simpl.RAMJobStore");
 
-        return properties;
+		return properties;
 	}
 
 	/**
@@ -444,31 +443,31 @@ public abstract class ExtendedGenericBundleActivator extends GenericBundleActiva
 	protected void addJob(BundleContext context, Class<? extends Job> clazz, String cronExpression) {
 		String jobName = clazz.getName();
 		String jobGroup = FrameworkUtil.getBundle(clazz).getSymbolicName();
-        JobDetail job = new JobDetail(jobName, jobGroup, clazz);
-        job.setDurability(false);
-        job.setVolatility(true);
-        job.setDescription(jobName);
+		JobDetail job = new JobDetail(jobName, jobGroup, clazz);
+		job.setDurability(false);
+		job.setVolatility(true);
+		job.setDescription(jobName);
 
-        try {
-	        CronTrigger trigger = new CronTrigger(jobName, jobGroup, cronExpression);
+		try {
+			CronTrigger trigger = new CronTrigger(jobName, jobGroup, cronExpression);
 
-	        if(scheduler == null) {
-	        	if(schedulerProperties == null) {
-	        		schedulerProperties = getDefaultSchedulerProperties();
-	        	}
-	        	scheduler = new StdSchedulerFactory(schedulerProperties).getScheduler();
+			if(scheduler == null) {
+				if(schedulerProperties == null) {
+					schedulerProperties = getDefaultSchedulerProperties();
+				}
+				scheduler = new StdSchedulerFactory(schedulerProperties).getScheduler();
 				scheduler.start();
-	        }
+			}
 
 			Date date = scheduler.scheduleJob(job, trigger);
 
 			Logger.info(this, "Scheduled job " + jobName + ", next trigger is on " + date);
 
-        } catch (ParseException e) {
-        	Logger.error(this, "Cron expression '" + cronExpression + "' has an exception. Throwing IllegalArgumentException", e);
-        	throw new IllegalArgumentException(e);
-        } catch (SchedulerException e) {
-        	Logger.error(this, "Unable to schedule job " + jobName, e);
+		} catch (ParseException e) {
+			Logger.error(this, "Cron expression '" + cronExpression + "' has an exception. Throwing IllegalArgumentException", e);
+			throw new IllegalArgumentException(e);
+		} catch (SchedulerException e) {
+			Logger.error(this, "Unable to schedule job " + jobName, e);
 		}
 
 	}
@@ -491,8 +490,8 @@ public abstract class ExtendedGenericBundleActivator extends GenericBundleActiva
 	 * services that require more than just a simple register/unregister. For instance Servlets and Filters.
 	 */
 	protected void removeTrackedServices() {
-		for(ServiceTracker<ExtHttpService, ExtHttpService> tracker: trackers) {
-			tracker.close();
+		for(Runnable runnable: cleanupFunctions) {
+			runnable.run();
 		}
 	}
 
@@ -621,22 +620,22 @@ public abstract class ExtendedGenericBundleActivator extends GenericBundleActiva
 	 */
 	private void initializeLoggerContext() {
 		//Initializing log4j...
-        LoggerContext dotcmsLoggerContext = Log4jUtil.getLoggerContext();
+		LoggerContext dotcmsLoggerContext = Log4jUtil.getLoggerContext();
 
-        if (dotcmsLoggerContext != null) {
+		if (dotcmsLoggerContext != null) {
 
-        	//Initialing the log4j context of this plugin based on the dotCMS logger context
-        	pluginLoggerContext = (LoggerContext) LogManager.getContext(this.getClass().getClassLoader(),
-        			false,
-        			dotcmsLoggerContext,
-        			dotcmsLoggerContext.getConfigLocation());
-        }
+			//Initialing the log4j context of this plugin based on the dotCMS logger context
+			pluginLoggerContext = (LoggerContext) LogManager.getContext(this.getClass().getClassLoader(),
+					false,
+					dotcmsLoggerContext,
+					dotcmsLoggerContext.getConfigLocation());
+		}
 
 	}
 
 	private void closeLoggerContext() {
-        if (pluginLoggerContext != null) {
-        	Log4jUtil.shutdown(pluginLoggerContext);
-        }
+		if (pluginLoggerContext != null) {
+			Log4jUtil.shutdown(pluginLoggerContext);
+		}
 	}
 }
