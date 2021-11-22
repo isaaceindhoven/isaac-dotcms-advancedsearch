@@ -1,5 +1,6 @@
 package nl.isaac.dotcms.searcher.osgi;
 
+import nl.isaac.dotcms.searcher.servlet.SearcherServletCSV;
 import org.osgi.framework.BundleContext;
 
 import nl.isaac.dotcms.searcher.servlet.SearcherServlet;
@@ -20,6 +21,7 @@ public class AdvancedSearchActivator extends ExtendedGenericBundleActivator {
 
 		// Register the servlet
 		addServlet(context, SearcherServlet.class, "/servlets/SearcherServlet");
+		addServlet(context, SearcherServletCSV.class, "/servlets/SearcherServletCSV");
 
 		// Register language variables (portlet name)
 		addLanguageVariables(context);

@@ -57,7 +57,7 @@ public class BufferedSearchResultIterator implements Iterator<Map<Type, Collecti
 	}
 
 	public void setBufferForNewHost(Host host) {
-		Logger.info(this, "Buffer is set for host: " + host.getHostname());
+		Logger.info(this.getClass().getName(), "Buffer is set for host: " + host.getHostname());
 
 		this.host = host;
 
@@ -161,7 +161,7 @@ public class BufferedSearchResultIterator implements Iterator<Map<Type, Collecti
 			break;
 		}
 
-		Logger.info(this, "Found [unfiltered] " + amountFound + " " + type + "(s) for host: " + host.getHostname());
+		Logger.info(this.getClass().getName(), "Found [unfiltered] " + amountFound + " " + type + "(s) for host: " + host.getHostname());
 
 		if (searcherFilter.spotsLeft()) {
 			if (searchAll) {

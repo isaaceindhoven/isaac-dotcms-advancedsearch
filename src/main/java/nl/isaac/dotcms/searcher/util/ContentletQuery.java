@@ -194,7 +194,7 @@ public class ContentletQuery {
 		if(languageId != null) {
 			addLanguage(languageId.toString());
 		} else {
-			Logger.warn(this, "Tried to add languageId Null!");
+			Logger.warn(this.getClass().getName(), "Tried to add languageId Null!");
 		}
 	}
 
@@ -206,7 +206,7 @@ public class ContentletQuery {
 		if(languageId != null) {
 			addLanguage(languageId.toString());
 		} else {
-			Logger.warn(this, "Tried to add languageId Null!");
+			Logger.warn(this.getClass().getName(), "Tried to add languageId Null!");
 		}
 	}
 	
@@ -278,7 +278,7 @@ public class ContentletQuery {
 			return APILocator.getContentletAPI().search(query.toString(), this.limit, this.offset, this.sortBy, APILocator.getUserAPI().getSystemUser(), false);
 			
 		} catch (DotDataException | DotSecurityException e) {
-			Logger.warn(this, "Exception while executing query", e);
+			Logger.warn(this.getClass().getName(), "Exception while executing query", e);
 		}
 		
 		return new ArrayList<Contentlet>();

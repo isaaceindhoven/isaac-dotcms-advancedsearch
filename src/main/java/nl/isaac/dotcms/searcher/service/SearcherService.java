@@ -35,7 +35,7 @@ public class SearcherService {
 	public Collection<PortletHit> getPortletHits() {
 		ArrayList<PortletHit> hits = new ArrayList<>();
 
-		Logger.info(this, "Searching for: " + userSearchValues.toString());
+		Logger.info(this.getClass().getName(), "Searching for: " + userSearchValues.toString());
 
 		Collection<Host> hosts = new HostDAO().getHosts(userSearchValues.getHost());
 

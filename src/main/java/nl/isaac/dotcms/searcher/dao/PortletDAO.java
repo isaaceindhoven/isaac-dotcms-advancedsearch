@@ -39,7 +39,7 @@ public class PortletDAO {
 		try {
 			return new ArrayList<>(APILocator.getContainerAPI().findContainersUnder(host));
 		} catch (DotDataException e) {
-			Logger.warn(this, "Error while getting all containers", e);
+			Logger.warn(this.getClass().getName(), "Error while getting all containers", e);
 		}
 
 		return new ArrayList<>();
@@ -49,7 +49,7 @@ public class PortletDAO {
 		try {
 			return APILocator.getTemplateAPI().findTemplatesAssignedTo(host);
 		} catch (DotDataException e) {
-			Logger.warn(this, "Error while getting all templates", e);
+			Logger.warn(this.getClass().getName(), "Error while getting all templates", e);
 		}
 
 		return new ArrayList<>();

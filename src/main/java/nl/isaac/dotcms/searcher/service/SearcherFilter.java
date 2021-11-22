@@ -124,7 +124,7 @@ public class SearcherFilter {
 			Map<String, Object> row = contentlet.getMap();
 			row.put("structureName", contentlet.getStructure().getName());
 			return filterAttributesAndGetHits(SearchableAttributesUtil.getContentletAttributes(type, contentlet),
-					host.getHostname(), row, status.getActualStatus());
+					host.getHostname(), contentlet, status.getActualStatus());
 		}
 
 		return null;

@@ -31,7 +31,7 @@ public class FolderDAO {
 		try {
 			folders.addAll(APILocator.getFolderAPI().findFoldersByHost(host, systemUser, false));
 		} catch (DotHibernateException | DotSecurityException e) {
-			Logger.warn(this, "Error while getting all folders", e);
+			Logger.warn(this.getClass().getName(), "Error while getting all folders", e);
 		}
 
 		return folders;

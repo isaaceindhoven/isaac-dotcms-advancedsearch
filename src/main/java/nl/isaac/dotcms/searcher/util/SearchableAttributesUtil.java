@@ -99,7 +99,7 @@ public final class SearchableAttributesUtil {
 		try {
 			metaData = new JsonParser().parse(file.getMetaData()).getAsJsonObject();
 		} catch (Throwable t) {
-			Logger.warn(SearchableAttributesUtil.class, "Can't parse metadata of " + file.getPath() + file.getFileName());
+			Logger.warn(SearchableAttributesUtil.class.getName(), "Can't parse metadata of " + file.getPath() + file.getFileName());
 		}
 
 		// ContentType returns: "text/plain; charset=ISO-8859-1"
@@ -116,7 +116,7 @@ public final class SearchableAttributesUtil {
 						fileText = new String(IOUtils.toByteArray(is));
 					} catch (IOException e) {
 						fileText = "";
-						Logger.warn(SearchableAttributesUtil.class, "Error while converting bytes to array of file: " + file.getFileName(), e);
+						Logger.warn(SearchableAttributesUtil.class.getName(), "Error while converting bytes to array of file: " + file.getFileName(), e);
 					}
 					searchableAttributes.add(new SearchableAttribute(Type.FILE, file.getFileName(), "Text of file", fileText));
 				}

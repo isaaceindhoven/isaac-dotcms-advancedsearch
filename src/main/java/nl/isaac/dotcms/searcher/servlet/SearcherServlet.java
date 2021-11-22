@@ -45,7 +45,7 @@ public class SearcherServlet extends HttpServlet {
 				if (clear) {
 					clearSearcherSession(req, resp);
 				} else {
-					Logger.info(this, "Searcher Session not cleared, boolean is not true!");
+					Logger.info(this.getClass().getName(), "Searcher Session not cleared, boolean is not true!");
 				}
 			} catch (Exception e) {
 				Logger.error(this, "Error!", e);
@@ -68,7 +68,7 @@ public class SearcherServlet extends HttpServlet {
 			req.getSession().setAttribute(attributeKey, attributeValue);
 		});
 
-		Logger.info(this, "Returned " + searchResults.size() + " search results");
+		Logger.info(this.getClass().getName(), "Returned " + searchResults.size() + " search results");
 
 		resp.sendRedirect(req.getParameter("redirectPage").replaceAll(PAGE_QUERY_PARAM_REGEX, ""));
 	}
@@ -83,16 +83,16 @@ public class SearcherServlet extends HttpServlet {
 				session.removeAttribute(attributeKey);
 			});
 
-			Logger.info(this, "Cleared Searcher Session!");
+			Logger.info(this.getClass().getName(), "Cleared Searcher Session!");
 
 			resp.sendRedirect(redirectTo.replaceAll(PAGE_QUERY_PARAM_REGEX, ""));
 		} else {
-			Logger.info(this, "Session or RedirectPage is not found in URL...");
+			Logger.info(this.getClass().getName(), "Session or RedirectPage is not found in URL...");
 		}
 	}
 
 	private UserSearchValues paramsToUserSearchValues(HttpServletRequest req) {
-		Logger.info(this, "Parsing posted parameters to SearchFilterRequest Object");
+		Logger.info(this.getClass().getName(), "Parsing posted parameters to SearchFilterRequest Object");
 
 		RequestHelper requestHelper = new RequestHelper(req);
 

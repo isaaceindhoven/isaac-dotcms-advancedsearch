@@ -27,7 +27,7 @@ public class HostDAO {
 				hosts.add(APILocator.getHostAPI().findByName(host, APILocator.getUserAPI().getSystemUser(), false));
 			}
 		} catch (DotDataException | DotSecurityException e) {
-			Logger.warn(this, "Exception while retrieving hosts: " + host, e);
+			Logger.warn(this.getClass().getName(), "Exception while retrieving hosts: " + host, e);
 			throw new RuntimeException(e);
 		}
 
@@ -42,7 +42,7 @@ public class HostDAO {
 		try {
 			return WebAPILocator.getHostWebAPI().getCurrentHost(request);
 		} catch (PortalException | SystemException | DotDataException | DotSecurityException e) {
-			Logger.warn(this, "Exception while retrieving current host", e);
+			Logger.warn(this.getClass().getName(), "Exception while retrieving current host", e);
 			throw new RuntimeException(e);
 		}
 	}
