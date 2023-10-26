@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import com.dotcms.storage.model.Metadata;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -90,21 +91,17 @@ public final class SearchableAttributesUtil {
 			return searchableAttributes;
 		}
 
-		if (StringUtils.isBlank(file.getMetaData())) {
-			return searchableAttributes;
-		}
-
-		JsonObject metaData = null;
+		Metadata metaData = null;
 
 		try {
-			metaData = new JsonParser().parse(file.getMetaData()).getAsJsonObject();
+			metaData = file.getMetadata();
 		} catch (Throwable t) {
 			Logger.warn(SearchableAttributesUtil.class.getName(), "Can't parse metadata of " + file.getPath() + file.getFileName());
 		}
 
 		// ContentType returns: "text/plain; charset=ISO-8859-1"
-		if (metaData != null && metaData.has("contentType")) {
-			String contentTypeWithCharacterSet = metaData.get("contentType").getAsString();
+		if (metaData != null && metaData.getContentType() != null) {
+			String contentTypeWithCharacterSet = metaData.getContentType();
 			String[] contentTypeWithCharacterSetArray = contentTypeWithCharacterSet.split(";");
 
 			if (contentTypeWithCharacterSetArray.length > 0) {

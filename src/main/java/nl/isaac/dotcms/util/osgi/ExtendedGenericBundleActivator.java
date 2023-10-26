@@ -1,6 +1,5 @@
 package nl.isaac.dotcms.util.osgi;
 
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -81,7 +80,7 @@ public abstract class ExtendedGenericBundleActivator extends GenericBundleActiva
 		} else {
 			DOTCMS_HOME = userDir;
 		}
-		Logger.debug(ExtendedGenericBundleActivator.class, "DOTCMS_HOME: " + DOTCMS_HOME);
+		Logger.debug(ExtendedGenericBundleActivator.class.getName(), "DOTCMS_HOME: " + DOTCMS_HOME);
 	}
 
 	public abstract void init(BundleContext context);
@@ -95,7 +94,7 @@ public abstract class ExtendedGenericBundleActivator extends GenericBundleActiva
 			init(context);
 			Logger.info(this.getClass().getName(), "Started " + context.getBundle().getSymbolicName());
 		} catch (Throwable t) {
-			Logger.error(this, "Initialization of plugin: " + context.getBundle().getSymbolicName() + " failed with error:", t);
+			Logger.error(this.getClass().getName(), "Initialization of plugin: " + context.getBundle().getSymbolicName() + " failed with error:", t);
 			throw t;
 		}
 	}
@@ -114,6 +113,7 @@ public abstract class ExtendedGenericBundleActivator extends GenericBundleActiva
 	}
 
 	protected void addViewTool(BundleContext context, Class<?> viewtoolClass, String key, ViewToolScope scope) {
+		Logger.info(this.getClass().getName(), "Add ViewTool " + key + " (extra log line in shared utils)");
 		OSGiSafeServletToolInfo viewtool = new OSGiSafeServletToolInfo();
 		viewtool.setClassname(viewtoolClass);
 		viewtool.setKey(key);
@@ -362,7 +362,7 @@ public abstract class ExtendedGenericBundleActivator extends GenericBundleActiva
 	protected void addRestService(BundleContext context, final Class<?> clazz) {
 		final Class thisClass = this.getClass();
 
-		Logger.info(thisClass, "Added REST service " + clazz.getSimpleName());
+		Logger.info(thisClass.getName(), "Added REST service " + clazz.getSimpleName());
 		RestServiceUtil.addResource(clazz);
 
 		cleanupFunctions.add(new Runnable() {
@@ -464,10 +464,10 @@ public abstract class ExtendedGenericBundleActivator extends GenericBundleActiva
 			Logger.info(this.getClass().getName(), "Scheduled job " + jobName + ", next trigger is on " + date);
 
 		} catch (ParseException e) {
-			Logger.error(this, "Cron expression '" + cronExpression + "' has an exception. Throwing IllegalArgumentException", e);
+			Logger.error(this.getClass().getName(), "Cron expression '" + cronExpression + "' has an exception. Throwing IllegalArgumentException", e);
 			throw new IllegalArgumentException(e);
 		} catch (SchedulerException e) {
-			Logger.error(this, "Unable to schedule job " + jobName, e);
+			Logger.error(this.getClass().getName(), "Unable to schedule job " + jobName, e);
 		}
 
 	}
@@ -566,7 +566,7 @@ public abstract class ExtendedGenericBundleActivator extends GenericBundleActiva
 		File originalFile = new File(DOTCMS_HOME + File.separator + resourceURL.getPath().substring(6));
 
 		if (backupFile.exists()) {
-			Logger.debug(this, "Backup already created earlier, so we don't create a new one");
+			Logger.debug(this.getClass().getName(), "Backup already created earlier, so we don't create a new one");
 		} else {
 			backupFile.getParentFile().mkdirs();
 			copyFile(originalFile.toURI().toURL(), backupFile);
